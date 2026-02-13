@@ -13,79 +13,75 @@ struct CrosswindReadout: View {
     let gustSpeed: Int?
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Text("CROSSWIND COMPONENT")
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .tracking(3)
-                .foregroundColor(Color(white: 0.4))
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .tracking(2.5)
+                .foregroundColor(Color(white: 0.35))
             
-            HStack(spacing: 8) {
+            // Main crosswind display with arrows
+            HStack(spacing: 6) {
                 if side == "L" {
-                    windArrow(pointingRight: true)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundColor(color.opacity(0.85))
                 }
                 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text("\(crosswind)")
-                        .font(.system(size: 80, weight: .bold, design: .rounded))
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
                         .foregroundColor(color)
                     
                     if let gust = gustCrosswind, gust > crosswind {
                         Text("G\(gust)")
-                            .font(.system(size: 38, weight: .bold, design: .rounded))
-                            .foregroundColor(color.opacity(0.5))
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundColor(color.opacity(0.45))
                     }
                     
                     Text("kt")
-                        .font(.system(size: 18, weight: .regular, design: .monospaced))
-                        .foregroundColor(Color(white: 0.35))
+                        .font(.system(size: 15, weight: .regular, design: .monospaced))
+                        .foregroundColor(Color(white: 0.3))
                 }
                 
                 if side == "R" {
-                    windArrow(pointingRight: false)
-                }
-                
-                if side.isEmpty {
-                    Color.clear.frame(width: 40)
+                    Image(systemName: "arrow.left")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundColor(color.opacity(0.85))
                 }
             }
             
-            HStack(spacing: 12) {
+            // Info line
+            HStack(spacing: 10) {
                 Text("\(headwind >= 0 ? "HEAD" : "TAIL") ")
-                    .foregroundColor(Color(white: 0.35))
-                +
+                    .foregroundColor(Color(white: 0.3)) +
                 Text("\(abs(headwind))kt")
                     .foregroundColor(headwind >= 0 ? .green : .red)
                 
-                Text("|").foregroundColor(Color(white: 0.15))
+                Text("|").foregroundColor(Color(white: 0.12))
                 
                 Text("RWY \(String(format: "%02d", runway))")
-                    .foregroundColor(Color(white: 0.35))
+                    .foregroundColor(Color(white: 0.3))
                 
-                Text("|").foregroundColor(Color(white: 0.15))
+                Text("|").foregroundColor(Color(white: 0.12))
                 
-                let gustText = gustSpeed.map { "G\($0)" } ?? ""
-                Text("\(String(format: "%03d", windDirection))@\(windSpeed)\(gustText)")
-                    .foregroundColor(Color(white: 0.35))
+                Group {
+                    let g = gustSpeed.map { "G\($0)" } ?? ""
+                    Text("\(String(format: "%03d", windDirection))@\(windSpeed)\(g)")
+                        .foregroundColor(Color(white: 0.3))
+                }
             }
-            .font(.system(size: 13, weight: .medium, design: .monospaced))
+            .font(.system(size: 11, weight: .medium, design: .monospaced))
         }
-        .padding(.vertical, 20)
-        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(white: 0.06))
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(white: 0.05))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(color.opacity(0.15), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(color.opacity(0.12), lineWidth: 1)
                 )
         )
-    }
-    
-    @ViewBuilder
-    private func windArrow(pointingRight: Bool) -> some View {
-        Image(systemName: pointingRight ? "arrow.right" : "arrow.left")
-            .font(.system(size: 36, weight: .bold))
-            .foregroundColor(color.opacity(0.85))
-            .shadow(color: color.opacity(0.3), radius: 8)
     }
 }

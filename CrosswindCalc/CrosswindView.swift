@@ -77,7 +77,7 @@ struct CrosswindView: View {
                 value: $windDirection,
                 range: 0...360,
                 step: 10,
-                displayFormat: { String(format: "%03d°", $0) },
+                displayFormat: { "\($0)°" },
                 accentColor: Color(red: 0.22, green: 0.74, blue: 0.97),
                 snap: true,
                 wraps: true
