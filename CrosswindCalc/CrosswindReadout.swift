@@ -38,7 +38,10 @@ struct CrosswindReadout: View {
                         .foregroundColor(color)
                     
                     if let gust = gustCrosswind, gust > crosswind {
-                        Text("G\(gust)")
+                        Text("G")
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundColor(color.opacity(0.5))
+                        Text("\(gust)")
                             .font(.system(size: 96, weight: .heavy, design: .rounded))
                             .foregroundColor(color)
                     }
@@ -55,14 +58,40 @@ struct CrosswindReadout: View {
                 .font(.system(size: 18, weight: .medium, design: .monospaced))
                 .foregroundColor(Color(white: 0.3))
             
-            // Headwind line - big
-            HStack(spacing: 6) {
-                Text(headwind >= 0 ? "HEADWIND" : "TAILWIND")
-                    .foregroundColor(Color(white: 0.45))
-                Text("\(abs(headwind)) kt")
-                    .foregroundColor(headwind >= 0 ? .green : .red)
+            // Headwind/Tailwind line
+            if headwind < 0 {
+                // TAILWIND WARNING - make it scream
+                VStack(spacing: 4) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 22))
+                        Text("TAILWIND")
+                        Text("\(abs(headwind)) kt")
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 22))
+                    }
+                    .font(.system(size: 26, weight: .heavy, design: .monospaced))
+                    .foregroundColor(.red)
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.red.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.red.opacity(0.4), lineWidth: 1)
+                        )
+                )
+            } else {
+                HStack(spacing: 6) {
+                    Text("HEADWIND")
+                        .foregroundColor(Color(white: 0.45))
+                    Text("\(abs(headwind)) kt")
+                        .foregroundColor(.green)
+                }
+                .font(.system(size: 22, weight: .bold, design: .monospaced))
             }
-            .font(.system(size: 22, weight: .bold, design: .monospaced))
             
             // Winds line below
             HStack(spacing: 10) {
@@ -86,7 +115,7 @@ struct CrosswindReadout: View {
                         Text("Increase Vref by \(addKts) kt")
                             .foregroundColor(.orange)
                     }
-                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 18, weight: .bold, design: .monospaced))
                 }
                 
                 if crosswind > 10 {
@@ -96,7 +125,7 @@ struct CrosswindReadout: View {
                         Text("Consider reducing flaps")
                             .foregroundColor(.yellow)
                     }
-                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 18, weight: .bold, design: .monospaced))
                 }
             }
             .padding(.top, 2)
