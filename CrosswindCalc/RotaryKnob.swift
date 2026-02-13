@@ -47,18 +47,24 @@ struct RotaryKnob: View {
     }
     
     var body: some View {
-        GeometryReader { geo in
-            let size = min(geo.size.width, geo.size.height)
-            let center = CGPoint(x: geo.size.width / 2,
-                                  y: geo.size.height / 2)
+        VStack(spacing: 4) {
+            Text(label)
+                .font(.system(size: 16, weight: .heavy, design: .monospaced))
+                .tracking(3)
+                .foregroundColor(color)
             
-            ZStack {
-                knobBody(size: size)
-                knobCenter(size: size)
-                indicatorDot(size: size)
-            }
-            .frame(width: size, height: size)
-            .position(center)
+            GeometryReader { geo in
+                let size = min(geo.size.width, geo.size.height)
+                let center = CGPoint(x: geo.size.width / 2,
+                                      y: geo.size.height / 2)
+                
+                ZStack {
+                    knobBody(size: size)
+                    knobCenter(size: size)
+                    indicatorDot(size: size)
+                }
+                .frame(width: size, height: size)
+                .position(center)
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { gesture in
@@ -90,8 +96,9 @@ struct RotaryKnob: View {
                         activeKnob = nil
                     }
             )
+            }
+            .aspectRatio(1, contentMode: .fit)
         }
-        .aspectRatio(1, contentMode: .fit)
     }
     
     // MARK: - Knob body (outer ring with knurling)
@@ -182,18 +189,23 @@ struct RotaryKnob: View {
                 )
                 .frame(width: innerSize, height: innerSize)
             
-            VStack(spacing: 1) {
-                Text(label)
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                    .tracking(1.5)
-                    .foregroundColor(Color(white: 0.4))
-                
+            VStack(spacing: 0) {
                 Text(displayFormat(value))
-                    .font(.system(size: innerSize * 0.28,
+                    .font(.system(size: innerSize * 0.35,
                                   weight: .heavy, design: .monospaced))
                     .foregroundColor(.white)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
+                
+                if !suffix.isEmpty {
+                    Text(suffix)
+                        .font(.system(size: 10, weight: .medium,
+                                      design: .monospaced))
+                        .foregroundColor(color.opacity(0.5))
+                }
+            }
+        }
+    }
                 
                 if !suffix.isEmpty {
                     Text(suffix)
