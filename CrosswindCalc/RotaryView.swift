@@ -5,10 +5,10 @@ enum KnobID: String {
 }
 
 struct RotaryView: View {
-    @State private var runway: Int = 18
-    @State private var windDirection: Int = 210
-    @State private var windSpeed: Int = 15
-    @State private var gustSpeed: Int = 15
+    @AppStorage("runway") private var runway: Int = 18
+    @AppStorage("windDirection") private var windDirection: Int = 210
+    @AppStorage("windSpeed") private var windSpeed: Int = 15
+    @AppStorage("gustSpeed") private var gustSpeed: Int = 15
     
     @State private var activeKnob: KnobID? = nil
     
