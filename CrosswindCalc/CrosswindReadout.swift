@@ -39,7 +39,6 @@ struct CrosswindReadout: View {
                     Text("kt")
                         .font(.system(size: 22, weight: .medium, design: .monospaced))
                         .foregroundColor(Color(white: 0.25))
-                        .padding(.bottom, 6)
                 }
                 
                 if side == "R" {
@@ -50,7 +49,6 @@ struct CrosswindReadout: View {
             }
             .frame(minHeight: 90)
             
-            // Info bar
             HStack(spacing: 14) {
                 HStack(spacing: 4) {
                     Text(headwind >= 0 ? "HEAD" : "TAIL")
@@ -58,14 +56,10 @@ struct CrosswindReadout: View {
                     Text("\(abs(headwind))kt")
                         .foregroundColor(headwind >= 0 ? .green : .red)
                 }
-                
                 Text("·").foregroundColor(Color(white: 0.2))
-                
                 Text("RWY \(String(format: "%02d", runway))")
                     .foregroundColor(Color(white: 0.35))
-                
                 Text("·").foregroundColor(Color(white: 0.2))
-                
                 Group {
                     let g = gustSpeed.map { "G\($0)" } ?? ""
                     Text("\(String(format: "%03d", windDirection))@\(windSpeed)\(g)")

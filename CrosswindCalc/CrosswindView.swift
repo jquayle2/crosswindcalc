@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct CrosswindView: View {
-    @State private var runway: Int = 18
-    @State private var windDirection: Int = 210
-    @State private var windSpeed: Int = 15
-    @State private var gustSpeed: Int = 15
+    @Binding var runway: Int
+    @Binding var windDirection: Int
+    @Binding var windSpeed: Int
+    @Binding var gustSpeed: Int
     
     private var crosswind: Int {
         let angle = Double(windDirection - runway * 10) * .pi / 180
@@ -96,14 +96,8 @@ struct CrosswindView: View {
         }
         .padding(.horizontal, 12)
         .background(Color(red: 0.04, green: 0.05, blue: 0.09))
-        .ignoresSafeArea(edges: .bottom)
         .onChange(of: windSpeed) { _, newValue in
             if gustSpeed < newValue { gustSpeed = newValue }
         }
     }
-}
-
-#Preview {
-    CrosswindView()
-        .preferredColorScheme(.dark)
 }
