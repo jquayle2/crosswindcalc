@@ -206,16 +206,6 @@ struct RotaryKnob: View {
             }
         }
     }
-                
-                if !suffix.isEmpty {
-                    Text(suffix)
-                        .font(.system(size: 8, weight: .medium,
-                                      design: .monospaced))
-                        .foregroundColor(color.opacity(0.5))
-                }
-            }
-        }
-    }
     
     // MARK: - Position indicator dot
     
