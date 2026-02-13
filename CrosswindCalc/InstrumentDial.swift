@@ -177,6 +177,12 @@ struct InstrumentDial: View {
             .frame(height: dialHeight)
             .clipped()
             .contentShape(Rectangle())
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        stopMomentum()
+                    }
+            )
             .gesture(dragGesture)
         }
     }
@@ -229,6 +235,12 @@ struct InstrumentDial: View {
         DragGesture()
             .onChanged { gesture in
                 stopMomentum()
+                
+                if lastDragValue == 0 {
+                    lastDragTime = .now
+                    lastDragValue = gesture.translation.width
+                    return
+                }
                 
                 let now = Date.now
                 let delta = gesture.translation.width - lastDragValue
