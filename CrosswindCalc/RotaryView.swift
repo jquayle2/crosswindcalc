@@ -107,13 +107,14 @@ struct RotaryView: View {
                 .frame(maxWidth: .infinity)
                 .opacity(activeKnob != nil ? 1 : 0)
             }
-            .frame(height: 180)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(white: 0.04))
             )
             .animation(.easeInOut(duration: 0.15), value: activeKnob)
             .padding(.top, 8)
+            
+            Spacer().frame(height: 8)
             
             // 2x2 knob grid
             HStack(spacing: 16) {
