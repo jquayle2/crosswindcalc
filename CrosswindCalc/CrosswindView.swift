@@ -57,16 +57,18 @@ struct CrosswindView: View {
                 range: 1...36,
                 step: 1,
                 displayFormat: { String(format: "%02d", $0) },
-                accentColor: Color(red: 0.94, green: 0.75, blue: 0.25)
+                accentColor: Color(red: 0.94, green: 0.75, blue: 0.25),
+                wraps: true
             )
             
             InstrumentDial(
                 title: "WIND",
                 value: $windDirection,
-                range: 0...360,
+                range: 0...350,
                 step: 10,
                 displayFormat: { "\($0)°" },
-                accentColor: Color(red: 0.22, green: 0.74, blue: 0.97)
+                accentColor: Color(red: 0.22, green: 0.74, blue: 0.97),
+                wraps: true
             )
             
             InstrumentDial(
