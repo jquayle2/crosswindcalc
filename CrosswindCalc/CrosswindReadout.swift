@@ -105,23 +105,15 @@ struct CrosswindReadout: View {
             // Advisories
             VStack(spacing: 4) {
                 if let addKts = gustAddKts {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                        Text("Increase Vref by \(addKts) kt")
-                            .foregroundColor(.orange)
-                    }
-                    .font(.system(size: 18, weight: .bold, design: .monospaced))
+                    Text("Increase Vref by \(addKts) kt")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(.orange)
                 }
                 
                 if crosswind > 10 {
-                    HStack(spacing: 6) {
-                        Image(systemName: "wind")
-                            .foregroundColor(.yellow)
-                        Text("Consider reducing flaps")
-                            .foregroundColor(.yellow)
-                    }
-                    .font(.system(size: 18, weight: .bold, design: .monospaced))
+                    Text("Consider reducing flaps")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(.yellow)
                 }
             }
             .padding(.top, 2)
