@@ -107,6 +107,8 @@ struct RotaryView: View {
                 .frame(maxWidth: .infinity)
                 .opacity(activeKnob != nil ? 1 : 0)
             }
+            .frame(height: 280)
+            .clipped()
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(white: 0.04))
