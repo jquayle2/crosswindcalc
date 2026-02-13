@@ -40,7 +40,7 @@ struct CrosswindReadout: View {
                     if let gust = gustCrosswind, gust > crosswind {
                         Text("G")
                             .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .foregroundColor(color.opacity(0.5))
+                            .foregroundColor(color.opacity(0.8))
                         Text("\(gust)")
                             .font(.system(size: 96, weight: .heavy, design: .rounded))
                             .foregroundColor(color)
@@ -53,10 +53,6 @@ struct CrosswindReadout: View {
                         .foregroundColor(color)
                 }
             }
-            
-            Text("kt")
-                .font(.system(size: 18, weight: .medium, design: .monospaced))
-                .foregroundColor(Color(white: 0.3))
             
             // Headwind/Tailwind line
             if headwind < 0 {
