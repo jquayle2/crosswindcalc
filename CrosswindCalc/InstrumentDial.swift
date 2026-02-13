@@ -15,7 +15,9 @@ struct InstrumentDial: View {
     @State private var accumulatedDrag: CGFloat = 0
     @State private var lastDragValue: CGFloat = 0
     
-    private let itemWidth: CGFloat = 52
+    private let itemWidth: CGFloat = 58
+    private let dialHeight: CGFloat = 88
+    private let bezelWidth: CGFloat = 8
     
     private var effectiveMin: Int { minValue ?? range.lowerBound }
     
@@ -28,32 +30,153 @@ struct InstrumentDial: View {
     }
     
     var body: some View {
-        VStack(spacing: 4) {
-            // Title
+        VStack(spacing: 5) {
             Text(title)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .tracking(2)
-                .foregroundColor(Color(white: 0.45))
+                .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                .tracking(3)
+                .foregroundColor(Color(white: 0.5))
             
-            // Dial body
             ZStack {
-                dialBezel
-                dialFace
-                selectionWindow
-                numberStrip
+                // Outer bezel ring - thick knurled metal
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(
+                        LinearGradient(
+                            stops: [
+                                .init(color: Color(white: 0.28), location: 0.0),
+                                .init(color: Color(white: 0.18), location: 0.15),
+                                .init(color: Color(white: 0.13), location: 0.5),
+                                .init(color: Color(white: 0.08), location: 0.85),
+                                .init(color: Color(white: 0.15), location: 1.0),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: .black.opacity(0.5), radius: 4, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color(white: 0.35), Color(white: 0.08)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.5
+                            )
+                    )
                 
+                // Knurled texture overlay
+                Canvas { context, size in
+                    for i in 0..<Int(size.width / 3) {
+                        let x = CGFloat(i) * 3 + 1.5
+                        var path = Path()
+                        path.move(to: CGPoint(x: x, y: 0))
+                        path.addLine(to: CGPoint(x: x, y: size.height))
+                        context.stroke(
+                            path,
+                            with: .color(.white.opacity(i % 2 == 0 ? 0.10 : 0.0)),
+                            lineWidth: 1.5
+                        )
+                        if i % 2 == 0 {
+                            var shadow = Path()
+                            shadow.move(to: CGPoint(x: x + 1.5, y: 0))
+                            shadow.addLine(to: CGPoint(x: x + 1.5, y: size.height))
+                            context.stroke(
+                                shadow,
+                                with: .color(.black.opacity(0.15)),
+                                lineWidth: 1
+                            )
+                        }
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .allowsHitTesting(false)
+                
+                // Inner black face with inset shadow
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.black)
+                    .padding(bezelWidth)
+                    .shadow(color: .black.opacity(0.8), radius: 3, y: 1)
+                
+                // Glass highlight on inner face
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.03), Color.clear],
+                            startPoint: .top,
+                            endPoint: .center
+                        )
+                    )
+                    .padding(bezelWidth)
+                
+                // Selection indicator - white triangle at top
+                VStack {
+                    Triangle()
+                        .fill(Color.white)
+                        .frame(width: 10, height: 6)
+                        .offset(y: bezelWidth - 1)
+                    Spacer()
+                }
+                
+                // Number strip
+                HStack(spacing: 0) {
+                    ForEach(-3...3, id: \.self) { offset in
+                        let idx = currentIndex + offset
+                        let isCenter = offset == 0
+                        let dist = abs(offset)
+                        
+                        Group {
+                            if idx >= 0 && idx < allValues.count {
+                                VStack(spacing: 2) {
+                                    // Tick mark
+                                    Rectangle()
+                                        .fill(isCenter ? accentColor : Color.white.opacity(0.4))
+                                        .frame(width: isCenter ? 2 : 1, height: isCenter ? 8 : 5)
+                                    
+                                    Text(displayFormat(allValues[idx]))
+                                        .font(.system(
+                                            size: isCenter ? 32 : 18,
+                                            weight: isCenter ? .heavy : .medium,
+                                            design: .monospaced
+                                        ))
+                                        .foregroundColor(
+                                            isCenter ? .white :
+                                                Color(white: max(0.2, 0.55 - Double(dist) * 0.12))
+                                        )
+                                        .minimumScaleFactor(0.6)
+                                        .lineLimit(1)
+                                }
+                            }
+                        }
+                        .frame(width: itemWidth)
+                        .opacity(isCenter ? 1.0 : max(0.15, 0.7 - Double(dist) * 0.2))
+                    }
+                }
+                .padding(.top, 4)
+                
+                // Suffix label bottom-right
                 if !suffix.isEmpty {
-                    suffixLabel
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Text(suffix)
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(accentColor.opacity(0.5))
+                                .padding(.trailing, bezelWidth + 8)
+                                .padding(.bottom, bezelWidth + 4)
+                        }
+                    }
                 }
             }
-            .frame(height: 64)
+            .frame(height: dialHeight)
             .clipped()
             .contentShape(Rectangle())
             .gesture(dragGesture)
         }
     }
     
-    // MARK: - Gesture
+    // MARK: - Drag gesture
     
     private var dragGesture: some Gesture {
         DragGesture()
@@ -68,7 +191,7 @@ struct InstrumentDial: View {
                     let newIndex = max(0, min(allValues.count - 1, currentIndex - steps))
                     if allValues[newIndex] != value {
                         value = allValues[newIndex]
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     }
                 }
             }
@@ -77,123 +200,17 @@ struct InstrumentDial: View {
                 lastDragValue = 0
             }
     }
-    
-    // MARK: - Bezel (knurled metal rim)
-    
-    private var dialBezel: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color(white: 0.20),
-                        Color(white: 0.12),
-                        Color(white: 0.16),
-                        Color(white: 0.10),
-                        Color(white: 0.14)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color(white: 0.30), Color(white: 0.12)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-            )
-            .overlay(knurling)
-    }
-    
-    // MARK: - Knurling texture
-    
-    private var knurling: some View {
-        Canvas { context, size in
-            let spacing: CGFloat = 4
-            let count = Int(size.width / spacing)
-            for i in 0..<count {
-                let x = CGFloat(i) * spacing + spacing / 2
-                var path = Path()
-                path.move(to: CGPoint(x: x, y: 2))
-                path.addLine(to: CGPoint(x: x, y: size.height - 2))
-                context.stroke(
-                    path,
-                    with: .color(Color.white.opacity(i % 2 == 0 ? 0.06 : 0.02)),
-                    lineWidth: 1
-                )
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .allowsHitTesting(false)
-    }
-    
-    // MARK: - Black instrument face
-    
-    private var dialFace: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(Color(red: 0.02, green: 0.02, blue: 0.04))
-            .padding(5)
-    }
-    
-    // MARK: - Selection window
-    
-    private var selectionWindow: some View {
-        RoundedRectangle(cornerRadius: 6)
-            .fill(accentColor.opacity(0.06))
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .strokeBorder(accentColor.opacity(0.5), lineWidth: 1.5)
-            )
-            .frame(width: itemWidth + 8, height: 52)
-    }
-    
-    // MARK: - Number strip
-    
-    private var numberStrip: some View {
-        HStack(spacing: 0) {
-            ForEach(-4...4, id: \.self) { offset in
-                let idx = currentIndex + offset
-                let isCenter = offset == 0
-                let dist = abs(offset)
-                
-                Group {
-                    if idx >= 0 && idx < allValues.count {
-                        Text(displayFormat(allValues[idx]))
-                            .font(.system(
-                                size: isCenter ? 28 : 17,
-                                weight: isCenter ? .bold : .medium,
-                                design: .monospaced
-                            ))
-                            .foregroundColor(
-                                isCenter ? accentColor :
-                                    Color(white: max(0.25, 0.6 - Double(dist) * 0.1))
-                            )
-                            .minimumScaleFactor(0.7)
-                            .lineLimit(1)
-                    } else {
-                        Text("")
-                    }
-                }
-                .frame(width: itemWidth)
-                .scaleEffect(isCenter ? 1.0 : max(0.7, 1.0 - Double(dist) * 0.08))
-                .opacity(isCenter ? 1.0 : max(0.2, 0.8 - Double(dist) * 0.17))
-            }
-        }
-    }
-    
-    // MARK: - Suffix
-    
-    private var suffixLabel: some View {
-        HStack {
-            Spacer()
-            Text(suffix)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundColor(accentColor.opacity(0.4))
-                .padding(.trailing, 14)
-        }
+}
+
+// MARK: - Triangle shape for indicator
+
+struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.closeSubpath()
+        return path
     }
 }

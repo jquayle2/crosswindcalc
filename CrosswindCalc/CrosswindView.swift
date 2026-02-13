@@ -22,11 +22,6 @@ struct CrosswindView: View {
         return Int(round(Double(windSpeed) * cos(angle)))
     }
     
-    private var gustHeadwind: Int {
-        let angle = Double(windDirection - runway * 10) * .pi / 180
-        return Int(round(Double(gustSpeed) * cos(angle)))
-    }
-    
     private var side: String {
         let diff = ((windDirection - runway * 10) % 360 + 360) % 360
         if diff > 0 && diff < 180 { return "L" }
@@ -42,13 +37,11 @@ struct CrosswindView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Crosswind readout
+        VStack(spacing: 16) {
             CrosswindReadout(
                 crosswind: crosswind,
                 gustCrosswind: gustSpeed > windSpeed ? gustCrosswind : nil,
                 headwind: headwind,
-                gustHeadwind: gustSpeed > windSpeed ? gustHeadwind : nil,
                 side: side,
                 color: severityColor,
                 runway: runway,
@@ -56,35 +49,26 @@ struct CrosswindView: View {
                 windSpeed: windSpeed,
                 gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
             )
-            .padding(.top, 16)
-            .padding(.bottom, 20)
+            .padding(.top, 8)
             
-            // Runway dial
             InstrumentDial(
                 title: "RUNWAY",
                 value: $runway,
                 range: 1...36,
                 step: 1,
                 displayFormat: { String(format: "%02d", $0) },
-                accentColor: Color(red: 0.94, green: 0.75, blue: 0.25),
-                snap: true
+                accentColor: Color(red: 0.94, green: 0.75, blue: 0.25)
             )
-            .padding(.bottom, 12)
             
-            // Wind direction dial
             InstrumentDial(
                 title: "WIND",
                 value: $windDirection,
                 range: 0...360,
                 step: 10,
                 displayFormat: { "\($0)°" },
-                accentColor: Color(red: 0.22, green: 0.74, blue: 0.97),
-                snap: true,
-                wraps: true
+                accentColor: Color(red: 0.22, green: 0.74, blue: 0.97)
             )
-            .padding(.bottom, 12)
             
-            // Wind speed dial
             InstrumentDial(
                 title: "SPEED",
                 value: $windSpeed,
@@ -94,9 +78,7 @@ struct CrosswindView: View {
                 accentColor: Color(red: 0.22, green: 0.74, blue: 0.97),
                 suffix: "KT"
             )
-            .padding(.bottom, 12)
             
-            // Gust dial
             InstrumentDial(
                 title: "GUST",
                 value: $gustSpeed,
@@ -110,12 +92,11 @@ struct CrosswindView: View {
             
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .background(Color(red: 0.04, green: 0.06, blue: 0.10))
+        .padding(.horizontal, 12)
+        .background(Color(red: 0.04, green: 0.05, blue: 0.09))
+        .ignoresSafeArea(edges: .bottom)
         .onChange(of: windSpeed) { _, newValue in
-            if gustSpeed < newValue {
-                gustSpeed = newValue
-            }
+            if gustSpeed < newValue { gustSpeed = newValue }
         }
     }
 }

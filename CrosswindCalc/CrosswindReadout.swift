@@ -4,7 +4,6 @@ struct CrosswindReadout: View {
     let crosswind: Int
     let gustCrosswind: Int?
     let headwind: Int
-    let gustHeadwind: Int?
     let side: String
     let color: Color
     let runway: Int
@@ -13,74 +12,78 @@ struct CrosswindReadout: View {
     let gustSpeed: Int?
     
     var body: some View {
-        VStack(spacing: 6) {
-            Text("CROSSWIND COMPONENT")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .tracking(2.5)
-                .foregroundColor(Color(white: 0.35))
+        VStack(spacing: 10) {
+            Text("CROSSWIND")
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .tracking(4)
+                .foregroundColor(Color(white: 0.4))
             
-            // Main crosswind display with arrows
-            HStack(spacing: 6) {
+            HStack(spacing: 10) {
                 if side == "L" {
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 30, weight: .bold))
-                        .foregroundColor(color.opacity(0.85))
+                        .font(.system(size: 44, weight: .heavy))
+                        .foregroundColor(color)
                 }
                 
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(crosswind)")
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .font(.system(size: 96, weight: .heavy, design: .rounded))
                         .foregroundColor(color)
                     
                     if let gust = gustCrosswind, gust > crosswind {
                         Text("G\(gust)")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundColor(color.opacity(0.45))
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundColor(color.opacity(0.4))
                     }
                     
                     Text("kt")
-                        .font(.system(size: 15, weight: .regular, design: .monospaced))
-                        .foregroundColor(Color(white: 0.3))
+                        .font(.system(size: 22, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(white: 0.25))
+                        .padding(.bottom, 6)
                 }
                 
                 if side == "R" {
                     Image(systemName: "arrow.left")
-                        .font(.system(size: 30, weight: .bold))
-                        .foregroundColor(color.opacity(0.85))
+                        .font(.system(size: 44, weight: .heavy))
+                        .foregroundColor(color)
                 }
             }
+            .frame(minHeight: 90)
             
-            // Info line
-            HStack(spacing: 10) {
-                Text("\(headwind >= 0 ? "HEAD" : "TAIL") ")
-                    .foregroundColor(Color(white: 0.3)) +
-                Text("\(abs(headwind))kt")
-                    .foregroundColor(headwind >= 0 ? .green : .red)
+            // Info bar
+            HStack(spacing: 14) {
+                HStack(spacing: 4) {
+                    Text(headwind >= 0 ? "HEAD" : "TAIL")
+                        .foregroundColor(Color(white: 0.35))
+                    Text("\(abs(headwind))kt")
+                        .foregroundColor(headwind >= 0 ? .green : .red)
+                }
                 
-                Text("|").foregroundColor(Color(white: 0.12))
+                Text("·").foregroundColor(Color(white: 0.2))
                 
                 Text("RWY \(String(format: "%02d", runway))")
-                    .foregroundColor(Color(white: 0.3))
+                    .foregroundColor(Color(white: 0.35))
                 
-                Text("|").foregroundColor(Color(white: 0.12))
+                Text("·").foregroundColor(Color(white: 0.2))
                 
                 Group {
                     let g = gustSpeed.map { "G\($0)" } ?? ""
                     Text("\(String(format: "%03d", windDirection))@\(windSpeed)\(g)")
-                        .foregroundColor(Color(white: 0.3))
+                        .foregroundColor(Color(white: 0.35))
                 }
             }
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
+            .font(.system(size: 14, weight: .semibold, design: .monospaced))
         }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(white: 0.05))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(white: 0.04))
+                .shadow(color: color.opacity(0.08), radius: 20)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(color.opacity(0.12), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(color.opacity(0.15), lineWidth: 1)
                 )
         )
     }
