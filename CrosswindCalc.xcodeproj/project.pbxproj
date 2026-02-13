@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A1000001 /* CrosswindCalcApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000011 /* CrosswindCalcApp.swift */; };
-		A1000002 /* CrosswindView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000012 /* CrosswindView.swift */; };
 		A1000003 /* CrosswindReadout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000013 /* CrosswindReadout.swift */; };
-		A1000004 /* InstrumentDial.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000014 /* InstrumentDial.swift */; };
 		A1000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000015 /* Assets.xcassets */; };
 		A1000006 /* RotaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000016 /* RotaryView.swift */; };
 		A1000007 /* RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017 /* RotaryKnob.swift */; };
@@ -19,9 +17,7 @@
 /* Begin PBXFileReference section */
 		A1000010 /* CrosswindCalc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswindCalc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000011 /* CrosswindCalcApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswindCalcApp.swift; sourceTree = "<group>"; };
-		A1000012 /* CrosswindView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswindView.swift; sourceTree = "<group>"; };
 		A1000013 /* CrosswindReadout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswindReadout.swift; sourceTree = "<group>"; };
-		A1000014 /* InstrumentDial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstrumentDial.swift; sourceTree = "<group>"; };
 		A1000015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000016 /* RotaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotaryView.swift; sourceTree = "<group>"; };
 		A1000017 /* RotaryKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotaryKnob.swift; sourceTree = "<group>"; };
@@ -50,9 +46,7 @@
 			isa = PBXGroup;
 			children = (
 				A1000011 /* CrosswindCalcApp.swift */,
-				A1000012 /* CrosswindView.swift */,
 				A1000013 /* CrosswindReadout.swift */,
-				A1000014 /* InstrumentDial.swift */,
 				A1000016 /* RotaryView.swift */,
 				A1000017 /* RotaryKnob.swift */,
 				A1000015 /* Assets.xcassets */,
@@ -138,9 +132,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000001 /* CrosswindCalcApp.swift in Sources */,
-				A1000002 /* CrosswindView.swift in Sources */,
 				A1000003 /* CrosswindReadout.swift in Sources */,
-				A1000004 /* InstrumentDial.swift in Sources */,
 				A1000006 /* RotaryView.swift in Sources */,
 				A1000007 /* RotaryKnob.swift in Sources */,
 			);
