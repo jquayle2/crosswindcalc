@@ -257,22 +257,21 @@ struct InstrumentDial: View {
     
     private func startMomentum() {
         var vel = velocity
-        guard abs(vel) > 200 else { return }
+        guard abs(vel) > 300 else { return }
         
         let timer = Timer.scheduledTimer(
-            withTimeInterval: 0.03, repeats: true
+            withTimeInterval: 0.04, repeats: true
         ) { t in
-            vel *= 0.92
+            vel *= 0.85
             
-            if abs(vel) < 80 {
+            if abs(vel) < 150 {
                 t.invalidate()
                 momentumTimer = nil
                 return
             }
             
-            let stepsPerTick = max(1, Int(abs(vel) / 600))
             let direction = vel > 0 ? -1 : 1
-            advanceBy(direction * stepsPerTick)
+            advanceBy(direction)
         }
         momentumTimer = timer
     }
