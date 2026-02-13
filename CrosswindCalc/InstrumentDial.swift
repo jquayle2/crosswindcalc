@@ -177,12 +177,7 @@ struct InstrumentDial: View {
             .frame(height: dialHeight)
             .clipped()
             .contentShape(Rectangle())
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        stopMomentum()
-                    }
-            )
+            .onTouchDown { stopMomentum() }
             .gesture(dragGesture)
         }
     }
@@ -306,5 +301,63 @@ struct Triangle: Shape {
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         path.closeSubpath()
         return path
+    }
+}
+
+// MARK: - Touch down detector
+
+struct TouchDownGestureModifier: ViewModifier {
+    let onTouchDown: () -> Void
+    
+    func body(content: Content) -> some View {
+        content.overlay(
+            TouchDownView(onTouchDown: onTouchDown)
+        )
+    }
+}
+
+struct TouchDownView: UIViewRepresentable {
+    let onTouchDown: () -> Void
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = TouchDownUIView()
+        view.onTouchDown = onTouchDown
+        view.backgroundColor = .clear
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        (uiView as? TouchDownUIView)?.onTouchDown = onTouchDown
+    }
+}
+
+class TouchDownUIView: UIView {
+    var onTouchDown: (() -> Void)?
+    
+    override func touchesBegan(_ touches: Set<UITouch>,
+                                with event: UIEvent?) {
+        onTouchDown?()
+        next?.touchesBegan(touches, with: event)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>,
+                                with event: UIEvent?) {
+        next?.touchesMoved(touches, with: event)
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>,
+                                with event: UIEvent?) {
+        next?.touchesEnded(touches, with: event)
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>,
+                                    with event: UIEvent?) {
+        next?.touchesCancelled(touches, with: event)
+    }
+}
+
+extension View {
+    func onTouchDown(_ action: @escaping () -> Void) -> some View {
+        modifier(TouchDownGestureModifier(onTouchDown: action))
     }
 }
