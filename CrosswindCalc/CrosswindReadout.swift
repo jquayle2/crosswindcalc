@@ -95,8 +95,9 @@ struct CrosswindReadout: View {
                     .foregroundColor(Color(white: 0.35))
                 Text("·").foregroundColor(Color(white: 0.2))
                 Group {
+                    let dir = windDirection == 0 ? 360 : windDirection
                     let g = gustSpeed.map { "G\($0)" } ?? ""
-                    Text("\(String(format: "%03d", windDirection))@\(windSpeed)\(g)")
+                    Text("\(String(format: "%03d", dir))@\(windSpeed)\(g)")
                         .foregroundColor(Color(white: 0.35))
                 }
             }

@@ -12,24 +12,26 @@ struct RotaryView: View {
     
     @State private var activeKnob: KnobID? = nil
     
+    private var windDeg: Int { windDirection % 360 }
+    
     private var crosswind: Int {
-        let angle = Double(windDirection - runway * 10) * .pi / 180
+        let angle = Double(windDeg - runway * 10) * .pi / 180
         return abs(Int(round(Double(windSpeed) * sin(angle))))
     }
     
     private var gustCrosswind: Int {
         guard gustSpeed > windSpeed else { return crosswind }
-        let angle = Double(windDirection - runway * 10) * .pi / 180
+        let angle = Double(windDeg - runway * 10) * .pi / 180
         return abs(Int(round(Double(gustSpeed) * sin(angle))))
     }
     
     private var headwind: Int {
-        let angle = Double(windDirection - runway * 10) * .pi / 180
+        let angle = Double(windDeg - runway * 10) * .pi / 180
         return Int(round(Double(windSpeed) * cos(angle)))
     }
     
     private var side: String {
-        let diff = ((windDirection - runway * 10) % 360 + 360) % 360
+        let diff = ((windDeg - runway * 10) % 360 + 360) % 360
         if diff > 0 && diff < 180 { return "L" }
         if diff > 180 { return "R" }
         return ""
@@ -135,7 +137,7 @@ struct RotaryView: View {
                 RotaryKnob(
                     label: "WIND",
                     value: $windDirection,
-                    range: 0...350,
+                    range: 10...360,
                     step: 10,
                     wraps: true,
                     displayFormat: { "\($0)°" },
