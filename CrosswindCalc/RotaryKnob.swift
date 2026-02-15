@@ -27,8 +27,17 @@ struct RotaryKnob: View {
             .map { $0 }
     }
     
+    private var fullValues: [Int] {
+        stride(from: range.lowerBound, through: range.upperBound, by: step)
+            .map { $0 }
+    }
+    
     private var currentIndex: Int {
         allValues.firstIndex(of: value) ?? 0
+    }
+    
+    private var currentFullIndex: Int {
+        fullValues.firstIndex(of: value) ?? 0
     }
     
     private let degreesPerStep: CGFloat = 12
@@ -50,23 +59,33 @@ struct RotaryKnob: View {
         }
     }
     
+    private func angleForFullIndex(_ index: Int) -> CGFloat {
+        let count = fullValues.count
+        if wraps {
+            return CGFloat((index + 1) % count) / CGFloat(count)
+        } else {
+            return CGFloat(index) / CGFloat(max(1, count - 1))
+        }
+    }
+    
+    private func fullIndexForAngle(_ fraction: CGFloat) -> Int {
+        let count = fullValues.count
+        if wraps {
+            let shifted = ((fraction * CGFloat(count)) - 1 + CGFloat(count))
+                .truncatingRemainder(dividingBy: CGFloat(count))
+            return Int(round(shifted)) % count
+        } else {
+            return min(count - 1, max(0, Int(round(fraction * CGFloat(count - 1)))))
+        }
+    }
+    
     private func jumpToAngle(_ angle: CGFloat, size: CGFloat) {
         let normalizedAngle = ((angle + 90).truncatingRemainder(dividingBy: 360) + 360)
             .truncatingRemainder(dividingBy: 360)
         let fraction = normalizedAngle / 360.0
         
-        let fullRange = stride(from: range.lowerBound, through: range.upperBound, by: step).map { $0 }
-        let fullCount = fullRange.count
-        
-        let fullIndex: Int
-        if wraps {
-            let raw = Int(round(fraction * CGFloat(fullCount)))
-            fullIndex = raw >= fullCount ? 0 : raw
-        } else {
-            fullIndex = min(fullCount - 1, max(0, Int(round(fraction * CGFloat(fullCount - 1)))))
-        }
-        
-        let targetValue = fullRange[fullIndex]
+        let targetFullIndex = fullIndexForAngle(fraction)
+        let targetValue = fullValues[targetFullIndex]
         let clampedValue = max(effectiveMin, min(range.upperBound, targetValue))
         
         if let closest = allValues.min(by: { abs($0 - clampedValue) < abs($1 - clampedValue) }), closest != value {
@@ -277,12 +296,7 @@ struct RotaryKnob: View {
     
     private func indicatorDot(size: CGFloat) -> some View {
         let dotRadius = size / 2 - 14
-        let normalizedPosition: CGFloat
-        if allValues.count > 1 {
-            normalizedPosition = CGFloat(currentIndex) / CGFloat(allValues.count - (wraps ? 0 : 1))
-        } else {
-            normalizedPosition = 0
-        }
+        let normalizedPosition = angleForFullIndex(currentFullIndex)
         let angle = normalizedPosition * .pi * 2 - .pi / 2
         
         return Circle()
