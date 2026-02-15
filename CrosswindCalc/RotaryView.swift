@@ -189,15 +189,16 @@ struct RotaryView: View {
     var body: some View {
         Group {
             if isIPad {
-                HStack(spacing: 24) {
+                VStack(spacing: 20) {
                     readoutPanel
-                        .frame(maxWidth: 500)
+                        .frame(maxWidth: 800)
+                        .padding(.top, 16)
                     
                     knobGrid
-                        .frame(maxWidth: 500)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(.horizontal, 40)
                 }
-                .padding(24)
-                .frame(maxWidth: 1024)
+                .padding(.horizontal, 24)
             } else {
                 VStack(spacing: 12) {
                     readoutPanel
