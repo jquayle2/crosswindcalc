@@ -151,8 +151,8 @@ struct RotaryKnob: View {
                     let (text, angleDeg) = item
                     let angleRad = (angleDeg - 90) * .pi / 180
                     Text(text)
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color(white: 0.4))
+                        .font(.system(size: 16, weight: .heavy, design: .monospaced))
+                        .foregroundColor(color.opacity(0.7))
                         .offset(
                             x: cos(angleRad) * radius,
                             y: sin(angleRad) * radius
