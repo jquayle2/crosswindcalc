@@ -132,7 +132,7 @@ struct RotaryView: View {
                     color: Color(red: 0.94, green: 0.75, blue: 0.25),
                     knobID: .runway,
                     activeKnob: $activeKnob,
-                    dialLabels: [("36", 0), ("9", 90), ("18", 180), ("27", 270)]
+                    dialLabels: [("36", 0), ("09", 90), ("18", 180), ("27", 270)]
                 )
                 
                 RotaryKnob(
@@ -145,7 +145,7 @@ struct RotaryView: View {
                     color: Color(red: 0.22, green: 0.74, blue: 0.97),
                     knobID: .wind,
                     activeKnob: $activeKnob,
-                    dialLabels: [("360", 0), ("180", 180)]
+                    dialLabels: [("360", 0), ("90", 90), ("180", 180), ("270", 270)]
                 )
             }
             
