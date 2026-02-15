@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrosswindCalc — Crosswind Calculator for Pilots</title>
+<meta name="description" content="A crosswind calculator built by a pilot, for pilots. Rotary knob controls, instant calculations, Vref adjustments, and gust advisories.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d17;
+    --surface: #111520;
+    --surface2: #181d2e;
+    --metal-light: #383838;
+    --metal-dark: #1a1a1a;
+    --blue: #38bdf8;
+    --blue-dim: rgba(56, 189, 248, 0.5);
+    --amber: #f0c040;
+    --amber-dim: rgba(240, 192, 64, 0.5);
+    --orange: #ff9400;
+    --orange-dim: rgba(255, 148, 0, 0.5);
+    --green: #4cd964;
+    --red: #ff453a;
+    --text: #e8e8e8;
+    --text-dim: #6b7280;
+    --text-muted: #3d4455;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    border: 1px solid rgba(56,189,248,0.2);
+    background: rgba(56,189,248,0.05);
+    color: var(--blue);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 8px var(--blue);
+  }
+
+  .hero-icon {
+    width: 180px;
+    height: 180px;
+    border-radius: 40px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.06),
+      0 20px 60px rgba(0,0,0,0.5),
+      0 0 80px rgba(56,189,248,0.1);
+    animation: fadeUp 0.8s ease both 0.1s;
+  }
+
+  .hero-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+  .hero h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-align: center;
+    margin-bottom: 1rem;
+    animation: fadeUp 0.8s ease both 0.2s;
+  }
+
+  .hero h1 .accent { color: var(--blue); }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 520px;
+    line-height: 1.7;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+    animation: fadeUp 0.8s ease both 0.3s;
+  }
+
+  .app-store-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 2rem;
+    background: #fff;
+    color: #000;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.8s ease both 0.4s;
+  }
+
+  .app-store-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,255,255,0.1);
+  }
+
+  .app-store-btn svg { width: 24px; height: 24px; }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 0.8s ease both 0.6s;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(to bottom, var(--text-muted), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+
+  .features {
+    padding: 6rem 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 3.5rem;
+    line-height: 1.2;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(56,189,248,0.15);
+    transform: translateY(-2px);
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+  }
+
+  .feature-icon.blue { background: rgba(56,189,248,0.1); color: var(--blue); }
+  .feature-icon.amber { background: rgba(240,192,64,0.1); color: var(--amber); }
+  .feature-icon.orange { background: rgba(255,148,0,0.1); color: var(--orange); }
+  .feature-icon.green { background: rgba(76,217,100,0.1); color: var(--green); }
+
+  .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .feature-card p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; font-weight: 300; }
+
+  .how-it-works {
+    padding: 4rem 2rem 6rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .step-list { display: flex; flex-direction: column; gap: 2rem; margin-top: 2rem; }
+
+  .step { display: flex; gap: 1.5rem; align-items: flex-start; }
+
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--blue);
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.15);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-content h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .step-content p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; font-weight: 300; }
+
+  .support {
+    padding: 6rem 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .support form { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+  .form-row { display: flex; gap: 1rem; }
+  .form-row > * { flex: 1; }
+
+  .support label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .support input, .support textarea, .support select {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .support input:focus, .support textarea:focus, .support select:focus { border-color: var(--blue); }
+  .support textarea { resize: vertical; min-height: 120px; }
+  .support select option { background: var(--surface); }
+
+  .submit-btn {
+    padding: 0.9rem 2rem;
+    background: var(--blue);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .privacy {
+    padding: 4rem 2rem 6rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .privacy-content {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-top: 2rem;
+  }
+
+  .privacy-content h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; margin-top: 1.5rem; }
+  .privacy-content h3:first-child { margin-top: 0; }
+  .privacy-content p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; font-weight: 300; }
+
+  footer {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  footer a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: var(--blue); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 0.8; transform: scaleY(1.3); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 600px) {
+    .hero-icon { width: 130px; height: 130px; border-radius: 30px; }
+    .form-row { flex-direction: column; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .privacy-content { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Available on iOS</div>
+  <div class="hero-icon">
+    <img src="icon.png" alt="CrosswindCalc App Icon">
+  </div>
+  <h1>Crosswind<span class="accent">Calc</span></h1>
+  <p class="hero-sub">
+    A crosswind calculator built by a pilot, for pilots. Rotary knob controls inspired by real cockpit instruments. No typing, no fuss — just spin and fly.
+  </p>
+  <a href="#" class="app-store-btn" id="appStoreLink">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+    Download on the App Store
+  </a>
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<section class="features reveal">
+  <div class="section-label">Features</div>
+  <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon blue">&#x27F3;</div>
+      <h3>Rotary Knob Controls</h3>
+      <p>Four tactile knobs for runway, wind direction, speed, and gusts. Touch to jump, drag to fine-tune. Designed for one-handed cockpit use.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon amber">RWY</div>
+      <h3>Instant Crosswind</h3>
+      <p>See your crosswind and headwind components update in real time as you adjust any parameter. Color-coded severity at a glance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon orange">G</div>
+      <h3>Gust Factor Aware</h3>
+      <p>Separate gust speed input with Vref adjustment advisories. Know exactly how much extra speed to carry for gusty conditions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">&#x2713;</div>
+      <h3>Pilot Advisories</h3>
+      <p>Automatic recommendations for flap reduction when crosswinds exceed 10 knots. Directional indicators show which side the wind hits.</p>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works reveal">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">Spin. Read. Fly.</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h4>Dial in your runway</h4>
+        <p>Spin the amber RWY knob to your active runway heading. The dial snaps to standard runway numbers 01–36.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h4>Set the wind</h4>
+        <p>Use the blue WIND and SPEED knobs to match the reported winds from ATIS, AWOS, or your METAR.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h4>Add gusts if applicable</h4>
+        <p>Dial up the orange GUST knob. The app automatically calculates the additional Vref speed you should carry.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h4>Read your crosswind</h4>
+        <p>The top display shows your crosswind component, headwind, wind side, and any pilot advisories — all in real time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="support reveal" id="support">
+  <div class="section-label">Support</div>
+  <h2 class="section-title">Get in touch</h2>
+  <p style="color: var(--text-dim); font-weight: 300; line-height: 1.7; margin-bottom: 0.5rem;">
+    Found a bug? Have a feature request? Just want to say hi? Drop a message below.
+  </p>
+  <form action="https://formspree.io/f/FORM_ID" method="POST">
+    <div class="form-row">
+      <label>Name <input type="text" name="name" required placeholder="Your name"></label>
+      <label>Email <input type="email" name="email" required placeholder="you@example.com"></label>
+    </div>
+    <label>Topic
+      <select name="topic">
+        <option value="bug">Bug Report</option>
+        <option value="feature">Feature Request</option>
+        <option value="question">Question</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+    <label>Message <textarea name="message" required placeholder="What's on your mind?"></textarea></label>
+    <button type="submit" class="submit-btn">Send Message</button>
+  </form>
+</section>
+
+<section class="privacy reveal" id="privacy">
+  <div class="section-label">Privacy</div>
+  <h2 class="section-title">Privacy Policy</h2>
+  <div class="privacy-content">
+    <h3>Your Data</h3>
+    <p>CrosswindCalc does not collect, store, or transmit any personal data. The app runs entirely on your device with no network calls, no analytics, no tracking, and no ads.</p>
+    <h3>What We Store</h3>
+    <p>The only data saved is your last-used dial settings (runway, wind direction, speed, and gust), stored locally on your device using iOS UserDefaults. This data never leaves your device.</p>
+    <h3>Third Parties</h3>
+    <p>CrosswindCalc does not use any third-party SDKs, analytics services, or advertising frameworks. There is zero data sharing with any third party.</p>
+    <h3>Contact</h3>
+    <p>If you have any questions about this privacy policy, please use the <a href="#support" style="color: var(--blue);">contact form</a> above.</p>
+    <p style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">Last updated: February 2026</p>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 CrosswindCalc &nbsp;&middot;&nbsp; <a href="#privacy">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="#support">Support</a></p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>
