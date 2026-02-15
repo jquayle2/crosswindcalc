@@ -18,6 +18,8 @@ struct RotaryKnob: View {
     @State private var accumulatedAngle: CGFloat = 0
     @State private var isDragging: Bool = false
     
+    private var isActive: Bool { activeKnob == knobID }
+    
     private var effectiveMin: Int { minValue ?? range.lowerBound }
     
     private var allValues: [Int] {
@@ -80,13 +82,23 @@ struct RotaryKnob: View {
                                       y: geo.size.height / 2)
                 
                 ZStack {
+                    knobBody(size: size)
                     dialNumbersRing(size: size)
-                    knobBody(size: size * 0.82)
-                    knobCenter(size: size * 0.82)
-                    indicatorDot(size: size * 0.82)
+                    knobCenter(size: size)
+                    indicatorDot(size: size)
                 }
                 .frame(width: size, height: size)
                 .position(center)
+                .overlay(
+                    Circle()
+                        .stroke(color, lineWidth: 2)
+                        .frame(width: size + 4, height: size + 4)
+                        .shadow(color: color.opacity(0.7), radius: 8)
+                        .shadow(color: color.opacity(0.4), radius: 16)
+                        .opacity(isActive ? 1 : 0)
+                        .position(center)
+                )
+                .animation(.easeInOut(duration: 0.15), value: isActive)
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { gesture in
@@ -129,17 +141,18 @@ struct RotaryKnob: View {
         }
     }
     
-    // MARK: - Dial numbers around the outside
+    // MARK: - Dial numbers inside the knob ring
     
     private func dialNumbersRing(size: CGFloat) -> some View {
-        let radius = size / 2 - 2
+        let radius = size / 2 - 18
         return ZStack {
             if let labels = dialLabels {
-                ForEach(labels, id: \.1) { text, angleDeg in
+                ForEach(Array(labels.enumerated()), id: \.offset) { _, item in
+                    let (text, angleDeg) = item
                     let angleRad = (angleDeg - 90) * .pi / 180
                     Text(text)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color(white: 0.45))
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        .foregroundColor(Color(white: 0.4))
                         .offset(
                             x: cos(angleRad) * radius,
                             y: sin(angleRad) * radius
@@ -148,6 +161,7 @@ struct RotaryKnob: View {
             }
         }
         .frame(width: size, height: size)
+        .allowsHitTesting(false)
     }
     
     // MARK: - Knob body (outer ring with knurling)
@@ -218,7 +232,7 @@ struct RotaryKnob: View {
     // MARK: - Center face with value
     
     private func knobCenter(size: CGFloat) -> some View {
-        let innerSize = size * 0.55
+        let innerSize = size * 0.48
         return ZStack {
             Circle()
                 .fill(Color.black)
