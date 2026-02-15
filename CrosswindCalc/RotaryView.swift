@@ -131,7 +131,8 @@ struct RotaryView: View {
                     displayFormat: { String(format: "%02d", $0) },
                     color: Color(red: 0.94, green: 0.75, blue: 0.25),
                     knobID: .runway,
-                    activeKnob: $activeKnob
+                    activeKnob: $activeKnob,
+                    dialLabels: [("36", 0), ("9", 90), ("18", 180), ("27", 270)]
                 )
                 
                 RotaryKnob(
@@ -143,7 +144,8 @@ struct RotaryView: View {
                     displayFormat: { "\($0)°" },
                     color: Color(red: 0.22, green: 0.74, blue: 0.97),
                     knobID: .wind,
-                    activeKnob: $activeKnob
+                    activeKnob: $activeKnob,
+                    dialLabels: [("360", 0), ("180", 180)]
                 )
             }
             
@@ -158,7 +160,8 @@ struct RotaryView: View {
                     color: Color(red: 0.22, green: 0.74, blue: 0.97),
                     knobID: .speed,
                     activeKnob: $activeKnob,
-                    suffix: "kt"
+                    suffix: "kt",
+                    dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)]
                 )
                 
                 RotaryKnob(
@@ -172,7 +175,8 @@ struct RotaryView: View {
                     knobID: .gust,
                     activeKnob: $activeKnob,
                     suffix: "kt",
-                    minValue: windSpeed
+                    minValue: windSpeed,
+                    dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)]
                 )
             }
             

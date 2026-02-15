@@ -12,9 +12,11 @@ struct RotaryKnob: View {
     @Binding var activeKnob: KnobID?
     var suffix: String = ""
     var minValue: Int? = nil
+    var dialLabels: [(String, CGFloat)]? = nil
     
     @State private var lastAngle: CGFloat? = nil
     @State private var accumulatedAngle: CGFloat = 0
+    @State private var isDragging: Bool = false
     
     private var effectiveMin: Int { minValue ?? range.lowerBound }
     
@@ -46,6 +48,25 @@ struct RotaryKnob: View {
         }
     }
     
+    private func jumpToAngle(_ angle: CGFloat, size: CGFloat) {
+        let normalizedAngle = ((angle + 90).truncatingRemainder(dividingBy: 360) + 360)
+            .truncatingRemainder(dividingBy: 360)
+        let fraction = normalizedAngle / 360.0
+        let count = allValues.count
+        
+        let targetIndex: Int
+        if wraps {
+            targetIndex = Int(round(fraction * CGFloat(count))) % count
+        } else {
+            targetIndex = min(count - 1, max(0, Int(round(fraction * CGFloat(count - 1)))))
+        }
+        
+        if allValues[targetIndex] != value {
+            value = allValues[targetIndex]
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 4) {
             Text(label)
@@ -59,60 +80,86 @@ struct RotaryKnob: View {
                                       y: geo.size.height / 2)
                 
                 ZStack {
-                    knobBody(size: size)
-                    knobCenter(size: size)
-                    indicatorDot(size: size)
+                    dialNumbersRing(size: size)
+                    knobBody(size: size * 0.82)
+                    knobCenter(size: size * 0.82)
+                    indicatorDot(size: size * 0.82)
                 }
                 .frame(width: size, height: size)
                 .position(center)
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { gesture in
-                        activeKnob = knobID
-                        
-                        let loc = gesture.location
-                        let dx = loc.x - size / 2
-                        let dy = loc.y - size / 2
-                        let angle = atan2(dy, dx) * 180 / .pi
-                        
-                        if let last = lastAngle {
-                            var delta = angle - last
-                            if delta > 180 { delta -= 360 }
-                            if delta < -180 { delta += 360 }
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { gesture in
+                            activeKnob = knobID
                             
-                            accumulatedAngle += delta
+                            let loc = gesture.location
+                            let dx = loc.x - size / 2
+                            let dy = loc.y - size / 2
+                            let angle = atan2(dy, dx) * 180 / .pi
                             
-                            let steps = Int(accumulatedAngle / degreesPerStep)
-                            if steps != 0 {
-                                accumulatedAngle -= CGFloat(steps) * degreesPerStep
-                                advanceBy(steps)
+                            if !isDragging {
+                                isDragging = true
+                                jumpToAngle(angle, size: size)
+                                lastAngle = angle
+                                accumulatedAngle = 0
+                            } else if let last = lastAngle {
+                                var delta = angle - last
+                                if delta > 180 { delta -= 360 }
+                                if delta < -180 { delta += 360 }
+                                
+                                accumulatedAngle += delta
+                                
+                                let steps = Int(accumulatedAngle / degreesPerStep)
+                                if steps != 0 {
+                                    accumulatedAngle -= CGFloat(steps) * degreesPerStep
+                                    advanceBy(steps)
+                                }
+                                lastAngle = angle
                             }
                         }
-                        lastAngle = angle
-                    }
-                    .onEnded { _ in
-                        lastAngle = nil
-                        accumulatedAngle = 0
-                        activeKnob = nil
-                    }
-            )
+                        .onEnded { _ in
+                            lastAngle = nil
+                            accumulatedAngle = 0
+                            isDragging = false
+                            activeKnob = nil
+                        }
+                )
             }
             .aspectRatio(1, contentMode: .fit)
         }
+    }
+    
+    // MARK: - Dial numbers around the outside
+    
+    private func dialNumbersRing(size: CGFloat) -> some View {
+        let radius = size / 2 - 2
+        return ZStack {
+            if let labels = dialLabels {
+                ForEach(labels, id: \.1) { text, angleDeg in
+                    let angleRad = (angleDeg - 90) * .pi / 180
+                    Text(text)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(Color(white: 0.45))
+                        .offset(
+                            x: cos(angleRad) * radius,
+                            y: sin(angleRad) * radius
+                        )
+                }
+            }
+        }
+        .frame(width: size, height: size)
     }
     
     // MARK: - Knob body (outer ring with knurling)
     
     private func knobBody(size: CGFloat) -> some View {
         ZStack {
-            // Shadow base
             Circle()
                 .fill(Color.black.opacity(0.4))
                 .frame(width: size, height: size)
                 .blur(radius: 6)
                 .offset(y: 3)
             
-            // Metal body
             Circle()
                 .fill(
                     RadialGradient(
@@ -140,7 +187,6 @@ struct RotaryKnob: View {
                         )
                 )
             
-            // Knurling grooves around the edge
             Canvas { context, canvasSize in
                 let c = CGPoint(x: canvasSize.width / 2,
                                 y: canvasSize.height / 2)
