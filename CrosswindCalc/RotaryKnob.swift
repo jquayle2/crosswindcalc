@@ -54,17 +54,23 @@ struct RotaryKnob: View {
         let normalizedAngle = ((angle + 90).truncatingRemainder(dividingBy: 360) + 360)
             .truncatingRemainder(dividingBy: 360)
         let fraction = normalizedAngle / 360.0
-        let count = allValues.count
         
-        let targetIndex: Int
+        let fullRange = stride(from: range.lowerBound, through: range.upperBound, by: step).map { $0 }
+        let fullCount = fullRange.count
+        
+        let fullIndex: Int
         if wraps {
-            targetIndex = Int(round(fraction * CGFloat(count))) % count
+            let raw = Int(round(fraction * CGFloat(fullCount)))
+            fullIndex = raw >= fullCount ? 0 : raw
         } else {
-            targetIndex = min(count - 1, max(0, Int(round(fraction * CGFloat(count - 1)))))
+            fullIndex = min(fullCount - 1, max(0, Int(round(fraction * CGFloat(fullCount - 1)))))
         }
         
-        if allValues[targetIndex] != value {
-            value = allValues[targetIndex]
+        let targetValue = fullRange[fullIndex]
+        let clampedValue = max(effectiveMin, min(range.upperBound, targetValue))
+        
+        if let closest = allValues.min(by: { abs($0 - clampedValue) < abs($1 - clampedValue) }), closest != value {
+            value = closest
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
     }
