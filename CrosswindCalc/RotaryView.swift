@@ -11,6 +11,7 @@ struct RotaryView: View {
     @AppStorage("gustSpeed") private var gustSpeed: Int = 15
     
     @State private var activeKnob: KnobID? = nil
+    @Environment(\.horizontalSizeClass) private var sizeClass
     
     private var windDeg: Int { windDirection % 360 }
     
@@ -74,54 +75,55 @@ struct RotaryView: View {
         }
     }
     
-    var body: some View {
-        VStack(spacing: 12) {
-            // Top readout - switches between crosswind and active knob
-            ZStack {
-                // Crosswind display (shown when no knob active)
-                CrosswindReadout(
-                    crosswind: crosswind,
-                    gustCrosswind: gustSpeed > windSpeed ? gustCrosswind : nil,
-                    headwind: headwind,
-                    side: side,
-                    color: severityColor,
-                    runway: runway,
-                    windDirection: windDirection,
-                    windSpeed: windSpeed,
-                    gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
-                )
-                .opacity(activeKnob == nil ? 1 : 0)
-                
-                // Active knob value (shown while adjusting)
-                VStack(spacing: 6) {
-                    Text(activeDisplayLabel)
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .tracking(4)
-                        .foregroundColor(activeColor.opacity(0.6))
-                    
-                    Text(activeDisplayText)
-                        .font(.system(size: 96, weight: .heavy, design: .rounded))
-                        .foregroundColor(activeColor)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                }
-                .padding(.vertical, 20)
-                .frame(maxWidth: .infinity)
-                .opacity(activeKnob != nil ? 1 : 0)
-            }
-            .frame(height: 280)
-            .clipped()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(white: 0.04))
+    private var isIPad: Bool { sizeClass == .regular }
+    
+    // MARK: - Readout panel
+    
+    private var readoutPanel: some View {
+        ZStack {
+            CrosswindReadout(
+                crosswind: crosswind,
+                gustCrosswind: gustSpeed > windSpeed ? gustCrosswind : nil,
+                headwind: headwind,
+                side: side,
+                color: severityColor,
+                runway: runway,
+                windDirection: windDirection,
+                windSpeed: windSpeed,
+                gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
             )
-            .animation(.easeInOut(duration: 0.15), value: activeKnob)
-            .padding(.top, 8)
+            .opacity(activeKnob == nil ? 1 : 0)
             
-            Spacer().frame(height: 8)
-            
-            // 2x2 knob grid
-            HStack(spacing: 16) {
+            VStack(spacing: 6) {
+                Text(activeDisplayLabel)
+                    .font(.system(size: isIPad ? 16 : 12, weight: .bold, design: .monospaced))
+                    .tracking(4)
+                    .foregroundColor(activeColor.opacity(0.6))
+                
+                Text(activeDisplayText)
+                    .font(.system(size: isIPad ? 120 : 96, weight: .heavy, design: .rounded))
+                    .foregroundColor(activeColor)
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
+            }
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity)
+            .opacity(activeKnob != nil ? 1 : 0)
+        }
+        .frame(height: isIPad ? 400 : 280)
+        .clipped()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(white: 0.04))
+        )
+        .animation(.easeInOut(duration: 0.15), value: activeKnob)
+    }
+    
+    // MARK: - Knob grid
+    
+    private var knobGrid: some View {
+        VStack(spacing: isIPad ? 24 : 16) {
+            HStack(spacing: isIPad ? 24 : 16) {
                 RotaryKnob(
                     label: "RWY",
                     value: $runway,
@@ -149,7 +151,7 @@ struct RotaryView: View {
                 )
             }
             
-            HStack(spacing: 16) {
+            HStack(spacing: isIPad ? 24 : 16) {
                 RotaryKnob(
                     label: "SPEED",
                     value: $windSpeed,
@@ -179,10 +181,38 @@ struct RotaryView: View {
                     dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)]
                 )
             }
-            
-            Spacer()
         }
-        .padding(.horizontal, 16)
+    }
+    
+    // MARK: - Body
+    
+    var body: some View {
+        Group {
+            if isIPad {
+                HStack(spacing: 24) {
+                    readoutPanel
+                        .frame(maxWidth: 500)
+                    
+                    knobGrid
+                        .frame(maxWidth: 500)
+                }
+                .padding(24)
+                .frame(maxWidth: 1024)
+            } else {
+                VStack(spacing: 12) {
+                    readoutPanel
+                        .padding(.top, 8)
+                    
+                    Spacer().frame(height: 8)
+                    
+                    knobGrid
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(red: 0.04, green: 0.05, blue: 0.09))
         .onChange(of: windSpeed) { _, newValue in
             if gustSpeed < newValue { gustSpeed = newValue }
