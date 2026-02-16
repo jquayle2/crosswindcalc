@@ -262,12 +262,12 @@ struct FeedbackView: View {
         
         var components = URLComponents()
         components.queryItems = [
-            URLQueryItem(name: "entry.91727898", value: surveyFavorite),
-            URLQueryItem(name: "entry.1117191226", value: surveyKeepBoth),
-            URLQueryItem(name: "entry.767028705", value: surveyFaster),
-            URLQueryItem(name: "entry.23646484", value: surveyTurbulence),
-            URLQueryItem(name: "entry.2043755986", value: surveyEasierRead),
-            URLQueryItem(name: "entry.93003604", value: surveyChanges),
+            URLQueryItem(name: "entry.1117191226", value: surveyFavorite),
+            URLQueryItem(name: "entry.767028705", value: surveyKeepBoth),
+            URLQueryItem(name: "entry.23646484", value: surveyFaster),
+            URLQueryItem(name: "entry.2043755986", value: surveyTurbulence),
+            URLQueryItem(name: "entry.93003604", value: surveyEasierRead),
+            URLQueryItem(name: "entry.91727898", value: surveyChanges),
         ]
         
         var request = URLRequest(url: url)
