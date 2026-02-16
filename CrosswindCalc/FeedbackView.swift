@@ -275,16 +275,23 @@ struct FeedbackView: View {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
         
-        URLSession.shared.dataTask(with: request) { _, response, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 isSubmitting = false
                 if let error = error {
-                    submitError = "Failed to submit: \(error.localizedDescription)"
-                } else {
-                    withAnimation { phaseRaw = "submitted" }
+                    submitError = "Error: \(error.localizedDescription)"
+                    print("Submit error: \(error)")
+                    return
                 }
+                if let http = response as? HTTPURLResponse {
+                    print("Form response status: \(http.statusCode)")
+                }
+                withAnimation { phaseRaw = "submitted" }
             }
         }.resume()
+        
+        print("Submitting to: \(request.url?.absoluteString ?? "nil")")
+        print("Body: \(String(data: request.httpBody ?? Data(), encoding: .utf8) ?? "nil")")
     }
 }
 
