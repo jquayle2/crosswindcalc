@@ -1,40 +1,13 @@
 import SwiftUI
 
-struct PracticeMETAR: Identifiable {
-    let id: Int
-    let runway: Int
-    let windDir: Int
-    let windSpd: Int
-    let gust: Int?
-    
-    var metarString: String {
-        let rwy = String(format: "%02d", runway)
-        let dir = String(format: "%03d", windDir)
-        if let g = gust {
-            return "RWY \(rwy)  \(dir)/\(windSpd)G\(g)"
-        }
-        return "RWY \(rwy)  \(dir)/\(windSpd)"
-    }
-    
-    var expectedCrosswind: Int {
-        let angle = Double(windDir - runway * 10) * .pi / 180
-        return abs(Int(round(Double(windSpd) * sin(angle))))
-    }
-}
-
 enum FeedbackPhase {
-    case practice
     case survey
     case submitted
 }
 
 struct FeedbackView: View {
     @Binding var showOnboarding: Bool
-    @AppStorage("feedbackPhase") private var phaseRaw: String = "practice"
-    @AppStorage("dialCompleted") private var dialCompleted: Int = 0
-    @AppStorage("keypadCompleted") private var keypadCompleted: Int = 0
-    @AppStorage("practiceIndex") private var practiceIndex: Int = 0
-    @AppStorage("currentInputMethod") private var currentInputMethod: String = "dial"
+    @AppStorage("feedbackPhase") private var phaseRaw: String = "survey"
     
     @AppStorage("surveyFavorite") private var surveyFavorite: String = ""
     @AppStorage("surveyKeepBoth") private var surveyKeepBoth: String = ""
@@ -43,38 +16,19 @@ struct FeedbackView: View {
     @AppStorage("surveyEasierRead") private var surveyEasierRead: String = ""
     @AppStorage("surveyChanges") private var surveyChanges: String = ""
     
-    @State private var practiceAnswer: String = ""
-    @State private var showResult: Bool = false
     @State private var isSubmitting: Bool = false
     @State private var submitError: String? = nil
     @FocusState private var textFieldFocused: Bool
-    
-    private let practiceItems: [PracticeMETAR] = [
-        PracticeMETAR(id: 0, runway: 12, windDir: 170, windSpd: 9, gust: nil),
-        PracticeMETAR(id: 1, runway: 24, windDir: 300, windSpd: 12, gust: 15),
-        PracticeMETAR(id: 2, runway: 7, windDir: 270, windSpd: 3, gust: 5),
-    ]
     
     private var phase: FeedbackPhase {
         get { FeedbackPhase(rawValue: phaseRaw) }
         set { phaseRaw = newValue.rawString }
     }
     
-    private var currentPractice: PracticeMETAR? {
-        guard practiceIndex < practiceItems.count else { return nil }
-        return practiceItems[practiceIndex]
-    }
-    
-    private var allPracticeComplete: Bool {
-        dialCompleted >= 3 && keypadCompleted >= 3
-    }
-    
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
                 switch phase {
-                case .practice:
-                    practiceView
                 case .survey:
                     surveyView
                 case .submitted:
@@ -90,264 +44,6 @@ struct FeedbackView: View {
         .onTapGesture { textFieldFocused = false }
     }
     
-    private var practiceView: some View {
-        VStack(spacing: 20) {
-            Text("PRACTICE")
-                .font(.system(size: 28, weight: .heavy, design: .monospaced))
-                .tracking(4)
-                .foregroundColor(Color(red: 0.94, green: 0.75, blue: 0.25))
-            
-            Text("Try each METAR on both input methods")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(white: 0.45))
-                .multilineTextAlignment(.center)
-            
-            inputMethodToggle
-                .padding(.top, 4)
-            
-            if let metar = currentPractice {
-                metarCard(metar)
-                    .padding(.top, 8)
-                
-                Text("Use the \(currentInputMethod == "dial" ? "rotary dials" : "keypad") on page \(currentInputMethod == "dial" ? "1" : "2") to calculate this crosswind, then enter your answer below.")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Color(white: 0.4))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 8)
-                
-                answerField(expected: metar.expectedCrosswind)
-            }
-            
-            Spacer().frame(height: 12)
-            
-            progressGrid
-            
-            if allPracticeComplete {
-                Button(action: {
-                    withAnimation { phaseRaw = "survey" }
-                }) {
-                    Text("CONTINUE TO SURVEY")
-                        .font(.system(size: 16, weight: .heavy, design: .monospaced))
-                        .tracking(2)
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(red: 0.94, green: 0.75, blue: 0.25))
-                        )
-                }
-                .padding(.top, 8)
-            }
-        }
-    }
-    
-    private var inputMethodToggle: some View {
-        HStack(spacing: 0) {
-            Button(action: { currentInputMethod = "dial" }) {
-                HStack(spacing: 6) {
-                    Image(systemName: "dial.medium.fill")
-                        .font(.system(size: 14))
-                    Text("DIAL")
-                        .font(.system(size: 13, weight: .heavy, design: .monospaced))
-                }
-                .foregroundColor(currentInputMethod == "dial" ? .black : Color(white: 0.5))
-                .frame(maxWidth: .infinity)
-                .frame(height: 40)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(currentInputMethod == "dial" ?
-                              Color(red: 0.94, green: 0.75, blue: 0.25) :
-                              Color(white: 0.1))
-                )
-            }
-            
-            Spacer().frame(width: 8)
-            
-            Button(action: { currentInputMethod = "keypad" }) {
-                HStack(spacing: 6) {
-                    Image(systemName: "number.square.fill")
-                        .font(.system(size: 14))
-                    Text("KEYPAD")
-                        .font(.system(size: 13, weight: .heavy, design: .monospaced))
-                }
-                .foregroundColor(currentInputMethod == "keypad" ? .black : Color(white: 0.5))
-                .frame(maxWidth: .infinity)
-                .frame(height: 40)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(currentInputMethod == "keypad" ?
-                              Color(red: 0.22, green: 0.74, blue: 0.97) :
-                              Color(white: 0.1))
-                )
-            }
-        }
-    }
-    
-    private func metarCard(_ metar: PracticeMETAR) -> some View {
-        VStack(spacing: 8) {
-            Text("METAR \(metar.id + 1) of 3")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(Color(white: 0.4))
-            
-            Text(metar.metarString)
-                .font(.system(size: 28, weight: .heavy, design: .monospaced))
-                .foregroundColor(.white)
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
-        }
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(white: 0.07))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color(white: 0.15), lineWidth: 1)
-                )
-        )
-    }
-    
-    private func answerField(expected: Int) -> some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 12) {
-                TextField("Crosswind?", text: $practiceAnswer)
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
-                    .foregroundColor(.white)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.center)
-                    .focused($textFieldFocused)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(white: 0.08))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color(white: 0.2), lineWidth: 1)
-                            )
-                    )
-                
-                Button(action: { checkAnswer(expected: expected) }) {
-                    Text("CHECK")
-                        .font(.system(size: 14, weight: .heavy, design: .monospaced))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.green)
-                        )
-                }
-                .disabled(practiceAnswer.isEmpty)
-            }
-            
-            if showResult {
-                if let answer = Int(practiceAnswer), abs(answer - expected) <= 1 {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("Correct! Crosswind is \(expected) kt")
-                            .foregroundColor(.green)
-                    }
-                    .font(.system(size: 15, weight: .bold, design: .monospaced))
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            advancePractice()
-                        }
-                    }
-                } else {
-                    HStack(spacing: 6) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                        Text("Try again — check your inputs")
-                            .foregroundColor(.red)
-                    }
-                    .font(.system(size: 15, weight: .bold, design: .monospaced))
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            showResult = false
-                            practiceAnswer = ""
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    private func checkAnswer(expected: Int) {
-        textFieldFocused = false
-        showResult = true
-    }
-    
-    private func advancePractice() {
-        if currentInputMethod == "dial" {
-            dialCompleted = min(dialCompleted + 1, 3)
-        } else {
-            keypadCompleted = min(keypadCompleted + 1, 3)
-        }
-        
-        showResult = false
-        practiceAnswer = ""
-        
-        let dialDone = currentInputMethod == "dial" ? dialCompleted : dialCompleted
-        let keyDone = currentInputMethod == "keypad" ? keypadCompleted : keypadCompleted
-        
-        if currentInputMethod == "dial" && dialCompleted >= 3 && keypadCompleted < 3 {
-            currentInputMethod = "keypad"
-            practiceIndex = keypadCompleted
-        } else if currentInputMethod == "keypad" && keypadCompleted >= 3 && dialCompleted < 3 {
-            currentInputMethod = "dial"
-            practiceIndex = dialCompleted
-        } else if dialDone >= 3 && keyDone >= 3 {
-            practiceIndex = 0
-        } else {
-            let current = currentInputMethod == "dial" ? dialCompleted : keypadCompleted
-            practiceIndex = min(current, 2)
-        }
-    }
-    
-    private var progressGrid: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 0) {
-                Text("")
-                    .frame(width: 70)
-                ForEach(0..<3) { i in
-                    Text("#\(i + 1)")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color(white: 0.4))
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            
-            progressRow(label: "Dial", completed: dialCompleted,
-                        color: Color(red: 0.94, green: 0.75, blue: 0.25))
-            progressRow(label: "Keypad", completed: keypadCompleted,
-                        color: Color(red: 0.22, green: 0.74, blue: 0.97))
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(white: 0.06))
-        )
-    }
-    
-    private func progressRow(label: String, completed: Int, color: Color) -> some View {
-        HStack(spacing: 0) {
-            Text(label)
-                .font(.system(size: 13, weight: .heavy, design: .monospaced))
-                .foregroundColor(color)
-                .frame(width: 70, alignment: .leading)
-            
-            ForEach(0..<3) { i in
-                Image(systemName: i < completed ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 20))
-                    .foregroundColor(i < completed ? color : Color(white: 0.2))
-                    .frame(maxWidth: .infinity)
-            }
-        }
-    }
-    
     private var surveyView: some View {
         VStack(spacing: 20) {
             Text("FEEDBACK")
@@ -355,9 +51,10 @@ struct FeedbackView: View {
                 .tracking(4)
                 .foregroundColor(Color(red: 0.94, green: 0.75, blue: 0.25))
             
-            Text("Help us make CrosswindCalc better")
+            Text("Try both input methods then\nhelp us decide what to keep")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(white: 0.45))
+                .multilineTextAlignment(.center)
             
             surveyQuestion(
                 title: "Which input method was your favorite?",
@@ -400,6 +97,7 @@ struct FeedbackView: View {
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 80)
                     .padding(10)
+                    .focused($textFieldFocused)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(white: 0.08))
@@ -547,44 +245,7 @@ struct FeedbackView: View {
                         )
                 )
             }
-            
-            Button(action: { resetAll() }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .font(.system(size: 16, weight: .bold))
-                    Text("REDO PRACTICE")
-                        .font(.system(size: 14, weight: .heavy, design: .monospaced))
-                        .tracking(1)
-                }
-                .foregroundColor(Color(white: 0.5))
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(white: 0.08))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color(white: 0.15), lineWidth: 1)
-                        )
-                )
-            }
         }
-    }
-    
-    private func resetAll() {
-        dialCompleted = 0
-        keypadCompleted = 0
-        practiceIndex = 0
-        currentInputMethod = "dial"
-        practiceAnswer = ""
-        showResult = false
-        surveyFavorite = ""
-        surveyKeepBoth = ""
-        surveyFaster = ""
-        surveyTurbulence = ""
-        surveyEasierRead = ""
-        surveyChanges = ""
-        withAnimation { phaseRaw = "practice" }
     }
     
     private func submitSurvey() {
@@ -634,15 +295,13 @@ struct FeedbackView: View {
 extension FeedbackPhase {
     init(rawValue: String) {
         switch rawValue {
-        case "survey": self = .survey
         case "submitted": self = .submitted
-        default: self = .practice
+        default: self = .survey
         }
     }
     
     var rawString: String {
         switch self {
-        case .practice: return "practice"
         case .survey: return "survey"
         case .submitted: return "submitted"
         }
