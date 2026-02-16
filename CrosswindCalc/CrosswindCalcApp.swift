@@ -11,7 +11,9 @@ struct CrosswindCalcApp: App {
 }
 
 struct MainTabView: View {
-    @State private var selectedTab = 0
+    @AppStorage("lastTab") private var selectedTab: Int = 0
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @State private var showOnboarding: Bool = false
     
     var body: some View {
         ZStack {
@@ -24,9 +26,20 @@ struct MainTabView: View {
                 
                 KeypadView()
                     .tag(1)
+                
+                FeedbackView(showOnboarding: $showOnboarding)
+                    .tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .always))
+        }
+        .onAppear {
+            if !hasSeenOnboarding {
+                showOnboarding = true
+            }
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView(isPresented: $showOnboarding)
         }
     }
 }
