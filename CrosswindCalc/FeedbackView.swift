@@ -252,25 +252,20 @@ struct FeedbackView: View {
         isSubmitting = true
         submitError = nil
         
-        let formURL = "GOOGLE_FORM_URL_HERE"
+        let formBase = "https://docs.google.com/forms/d/e/1FAIpQLScc3biOfKOiD595NLw-zYvJ_gXf3fNZ3ERVTX9TRV61KBdB1Q/formResponse"
         
-        guard let url = URL(string: formURL) else {
-            submitError = "Invalid form URL"
-            isSubmitting = false
-            return
-        }
-        
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        components?.queryItems = [
-            URLQueryItem(name: "entry.FIELD1", value: surveyFavorite),
-            URLQueryItem(name: "entry.FIELD2", value: surveyKeepBoth),
-            URLQueryItem(name: "entry.FIELD3", value: surveyFaster),
-            URLQueryItem(name: "entry.FIELD4", value: surveyTurbulence),
-            URLQueryItem(name: "entry.FIELD5", value: surveyEasierRead),
-            URLQueryItem(name: "entry.FIELD6", value: surveyChanges),
+        var components = URLComponents(string: formBase)!
+        components.queryItems = [
+            URLQueryItem(name: "entry.91727898", value: surveyFavorite),
+            URLQueryItem(name: "entry.1117191226", value: surveyKeepBoth),
+            URLQueryItem(name: "entry.767028705", value: surveyFaster),
+            URLQueryItem(name: "entry.23646484", value: surveyTurbulence),
+            URLQueryItem(name: "entry.2043755986", value: surveyEasierRead),
+            URLQueryItem(name: "entry.93003604", value: surveyChanges),
+            URLQueryItem(name: "submit", value: "Submit"),
         ]
         
-        guard let submitURL = components?.url else {
+        guard let submitURL = components.url else {
             submitError = "Could not build URL"
             isSubmitting = false
             return
