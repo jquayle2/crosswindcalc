@@ -254,7 +254,13 @@ struct FeedbackView: View {
         
         let formBase = "https://docs.google.com/forms/d/e/1FAIpQLScc3biOfKOiD595NLw-zYvJ_gXf3fNZ3ERVTX9TRV61KBdB1Q/formResponse"
         
-        var components = URLComponents(string: formBase)!
+        guard let url = URL(string: formBase) else {
+            submitError = "Invalid form URL"
+            isSubmitting = false
+            return
+        }
+        
+        var components = URLComponents()
         components.queryItems = [
             URLQueryItem(name: "entry.91727898", value: surveyFavorite),
             URLQueryItem(name: "entry.1117191226", value: surveyKeepBoth),
@@ -262,17 +268,12 @@ struct FeedbackView: View {
             URLQueryItem(name: "entry.23646484", value: surveyTurbulence),
             URLQueryItem(name: "entry.2043755986", value: surveyEasierRead),
             URLQueryItem(name: "entry.93003604", value: surveyChanges),
-            URLQueryItem(name: "submit", value: "Submit"),
         ]
         
-        guard let submitURL = components.url else {
-            submitError = "Could not build URL"
-            isSubmitting = false
-            return
-        }
-        
-        var request = URLRequest(url: submitURL)
-        request.httpMethod = "GET"
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
         
         URLSession.shared.dataTask(with: request) { _, response, error in
             DispatchQueue.main.async {
