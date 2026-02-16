@@ -20,6 +20,10 @@ struct FeedbackView: View {
     @State private var submitError: String? = nil
     @FocusState private var textFieldFocused: Bool
     
+    private var deviceID: String {
+        UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
+    }
+    
     private var phase: FeedbackPhase {
         get { FeedbackPhase(rawValue: phaseRaw) }
         set { phaseRaw = newValue.rawString }
@@ -268,6 +272,7 @@ struct FeedbackView: View {
             URLQueryItem(name: "entry.2043755986", value: surveyTurbulence),
             URLQueryItem(name: "entry.93003604", value: surveyEasierRead),
             URLQueryItem(name: "entry.91727898", value: surveyChanges),
+            URLQueryItem(name: "entry.1126570383", value: deviceID),
         ]
         
         var request = URLRequest(url: url)
