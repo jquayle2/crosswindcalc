@@ -272,7 +272,7 @@ struct FeedbackView: View {
             URLQueryItem(name: "entry.2043755986", value: surveyTurbulence),
             URLQueryItem(name: "entry.93003604", value: surveyEasierRead),
             URLQueryItem(name: "entry.91727898", value: surveyChanges),
-            URLQueryItem(name: "entry.1126570383", value: deviceID),
+            URLQueryItem(name: "entry.370394917", value: deviceID),
         ]
         
         var request = URLRequest(url: url)
