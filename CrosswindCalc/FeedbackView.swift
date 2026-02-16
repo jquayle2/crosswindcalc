@@ -288,15 +288,10 @@ struct FeedbackView: View {
                     print("Submit error: \(error)")
                     return
                 }
-                if let http = response as? HTTPURLResponse {
-                    print("Form response status: \(http.statusCode)")
-                }
                 withAnimation { phaseRaw = "submitted" }
             }
         }.resume()
-        
-        print("Submitting to: \(request.url?.absoluteString ?? "nil")")
-        print("Body: \(String(data: request.httpBody ?? Data(), encoding: .utf8) ?? "nil")")
+
     }
 }
 
