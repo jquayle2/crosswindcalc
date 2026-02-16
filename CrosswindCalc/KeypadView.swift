@@ -153,6 +153,7 @@ struct KeypadView: View {
         }
         .animation(.easeInOut(duration: 0.15), value: currentStep)
         .animation(.easeInOut(duration: 0.15), value: errorMessage)
+        .animation(.easeInOut(duration: 0.12), value: inputBuffer)
     }
     
     private var progressDots: some View {
@@ -308,17 +309,19 @@ struct KeypadView: View {
         Group {
             switch button {
             case .digit(let d):
+                let enabled = isDigitEnabled(d)
                 Button(action: { digitPressed(d) }) {
                     Text(d)
                         .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(enabled ? .white : Color(white: 0.2))
                         .frame(maxWidth: .infinity)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(white: 0.12))
+                                .fill(enabled ? Color(white: 0.12) : Color(white: 0.06))
                         )
                 }
+                .disabled(!enabled)
                 
             case .backspace:
                 Button(action: { backspacePressed() }) {
@@ -357,10 +360,54 @@ struct KeypadView: View {
         }
     }
     
+    private func isDigitEnabled(_ digit: String) -> Bool {
+        guard let d = Int(digit) else { return false }
+        
+        switch currentStep {
+        case .runway, .windDirection:
+            if inputBuffer.isEmpty {
+                if d == 0 { return false }
+                return true
+            }
+            if inputBuffer.count == 1 {
+                guard let first = Int(inputBuffer) else { return true }
+                if first == 0 {
+                    return d >= 1 && d <= 9
+                }
+                if first == 1 || first == 2 {
+                    return d >= 0 && d <= 9
+                }
+                if first == 3 {
+                    return d >= 0 && d <= 6
+                }
+                return true
+            }
+            return true
+            
+        case .windSpeed, .gust:
+            return true
+            
+        case .result:
+            return false
+        }
+    }
+    
     private func digitPressed(_ digit: String) {
         errorMessage = nil
         
         guard inputBuffer.count < currentStep.maxDigits else { return }
+        guard isDigitEnabled(digit) else { return }
+        
+        guard let d = Int(digit) else { return }
+        
+        if (currentStep == .runway || currentStep == .windDirection) && inputBuffer.isEmpty && d >= 4 && d <= 9 {
+            inputBuffer = "0" + digit
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                validateAndAdvance()
+            }
+            return
+        }
         
         inputBuffer += digit
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
