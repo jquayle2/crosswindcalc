@@ -53,6 +53,8 @@ struct CrosswindReadout: View {
                         .foregroundColor(color)
                 }
             }
+            .minimumScaleFactor(0.5)
+            .lineLimit(1)
             
             // Headwind/Tailwind line
             if headwind < 0 {

@@ -13,6 +13,9 @@ struct RotaryKnob: View {
     var suffix: String = ""
     var minValue: Int? = nil
     var dialLabels: [(String, CGFloat)]? = nil
+    var dotBetweenTicks: Bool = false
+    var tickDivisions: Int? = nil
+    var minorTickDivisions: Int? = nil
     
     @State private var lastAngle: CGFloat? = nil
     @State private var accumulatedAngle: CGFloat = 0
@@ -169,7 +172,7 @@ struct RotaryKnob: View {
     // MARK: - Dial numbers inside the knob ring
     
     private func dialNumbersRing(size: CGFloat) -> some View {
-        let radius = size / 2 - 18
+        let radius = size / 2 - 24
         return ZStack {
             if let labels = dialLabels {
                 ForEach(Array(labels.enumerated()), id: \.offset) { _, item in
@@ -230,23 +233,38 @@ struct RotaryKnob: View {
                 let c = CGPoint(x: canvasSize.width / 2,
                                 y: canvasSize.height / 2)
                 let r = size / 2 - 2
-                let grooveCount = 60
+                let majorCount = tickDivisions ?? fullValues.count
+                let wrapsOffset = wraps
+                    ? (.pi * 2 / CGFloat(majorCount))
+                    : CGFloat(0)
+                let halfTickOffset = dotBetweenTicks && wraps
+                    ? (.pi / CGFloat(majorCount))
+                    : CGFloat(0)
                 
-                for i in 0..<grooveCount {
-                    let a = CGFloat(i) / CGFloat(grooveCount) * .pi * 2
-                    let inner = r - 8
+                func drawTick(angle: CGFloat, length: CGFloat, opacity: Double, width: CGFloat) {
+                    let inner = r - length
                     var path = Path()
-                    path.move(to: CGPoint(
-                        x: c.x + cos(a) * inner,
-                        y: c.y + sin(a) * inner))
-                    path.addLine(to: CGPoint(
-                        x: c.x + cos(a) * r,
-                        y: c.y + sin(a) * r))
-                    
-                    context.stroke(path,
-                        with: .color(.white.opacity(
-                            i % 2 == 0 ? 0.12 : 0.0)),
-                        lineWidth: 1.5)
+                    path.move(to: CGPoint(x: c.x + cos(angle) * inner, y: c.y + sin(angle) * inner))
+                    path.addLine(to: CGPoint(x: c.x + cos(angle) * r, y: c.y + sin(angle) * r))
+                    context.stroke(path, with: .color(.white.opacity(opacity)), lineWidth: width)
+                }
+                
+                for i in 0..<majorCount {
+                    let fraction: CGFloat = wraps
+                        ? CGFloat(i) / CGFloat(majorCount)
+                        : CGFloat(i) / CGFloat(max(1, majorCount - 1))
+                    let a = fraction * .pi * 2 - .pi / 2 + wrapsOffset + halfTickOffset
+                    drawTick(angle: a, length: 8, opacity: 0.18, width: 1)
+                }
+                
+                if let minorCount = minorTickDivisions {
+                    for i in 0..<minorCount {
+                        let fraction: CGFloat = wraps
+                            ? CGFloat(i) / CGFloat(minorCount)
+                            : CGFloat(i) / CGFloat(max(1, minorCount - 1))
+                        let a = fraction * .pi * 2 - .pi / 2 + wrapsOffset + halfTickOffset
+                        drawTick(angle: a, length: 4, opacity: 0.1, width: 0.5)
+                    }
                 }
             }
             .frame(width: size, height: size)
@@ -295,7 +313,7 @@ struct RotaryKnob: View {
     // MARK: - Position indicator dot
     
     private func indicatorDot(size: CGFloat) -> some View {
-        let dotRadius = size / 2 - 14
+        let dotRadius = size / 2 - 6
         let normalizedPosition = angleForFullIndex(currentFullIndex)
         let angle = normalizedPosition * .pi * 2 - .pi / 2
         

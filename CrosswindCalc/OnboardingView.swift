@@ -132,22 +132,22 @@ struct OnboardingView: View {
                 featureRow(
                     icon: "keyboard",
                     color: Color(red: 0.22, green: 0.74, blue: 0.97),
-                    title: "Type It In",
-                    detail: "Enter numbers just like reading a METAR"
+                    title: "Tap Any Value",
+                    detail: "Tap a box to edit, tap another to change it"
+                )
+                
+                featureRow(
+                    icon: "hand.draw.fill",
+                    color: Color(red: 1.0, green: 0.58, blue: 0.0),
+                    title: "Swipe Two Digits",
+                    detail: "Press the first number, drag to the second, and release"
                 )
                 
                 featureRow(
                     icon: "arrow.right.circle.fill",
-                    color: Color(red: 1.0, green: 0.58, blue: 0.0),
-                    title: "Guided Steps",
-                    detail: "Runway → Wind → Speed → Gust, done"
-                )
-                
-                featureRow(
-                    icon: "textformat.123",
                     color: .green,
-                    title: "Just 7–8 Digits",
-                    detail: "Quick numeric entry for the whole calculation"
+                    title: "Auto-Advance",
+                    detail: "Jumps to the next field after each entry"
                 )
             }
             .padding(.horizontal, 32)

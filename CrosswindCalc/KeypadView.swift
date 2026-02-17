@@ -1,39 +1,17 @@
 import SwiftUI
 
-enum KeypadStep: Int, CaseIterable {
+enum KeypadField: Int, CaseIterable {
     case runway = 0
     case windDirection = 1
     case windSpeed = 2
     case gust = 3
-    case result = 4
     
     var title: String {
         switch self {
-        case .runway: return "RUNWAY"
-        case .windDirection: return "WIND DIRECTION"
-        case .windSpeed: return "WIND SPEED"
-        case .gust: return "GUST SPEED"
-        case .result: return "CROSSWIND"
-        }
-    }
-    
-    var subtitle: String {
-        switch self {
-        case .runway: return "Enter runway heading (01–36)"
-        case .windDirection: return "Enter first two digits (01–36)"
-        case .windSpeed: return "Enter wind speed in knots"
-        case .gust: return "Enter gust speed or skip"
-        case .result: return ""
-        }
-    }
-    
-    var maxDigits: Int {
-        switch self {
-        case .runway: return 2
-        case .windDirection: return 2
-        case .windSpeed: return 2
-        case .gust: return 2
-        case .result: return 0
+        case .runway: return "RWY"
+        case .windDirection: return "WIND"
+        case .windSpeed: return "SPEED"
+        case .gust: return "GUST"
         }
     }
     
@@ -43,56 +21,60 @@ enum KeypadStep: Int, CaseIterable {
         case .windDirection: return Color(red: 0.22, green: 0.74, blue: 0.97)
         case .windSpeed: return Color(red: 0.22, green: 0.74, blue: 0.97)
         case .gust: return Color(red: 1.0, green: 0.58, blue: 0.0)
-        case .result: return .green
         }
     }
     
-    var suffix: String {
+    var maxDigits: Int {
         switch self {
-        case .runway: return ""
-        case .windDirection: return "°"
-        case .windSpeed: return " kt"
-        case .gust: return " kt"
-        case .result: return ""
+        case .runway: return 2
+        case .windDirection: return 2
+        case .windSpeed: return 2
+        case .gust: return 2
         }
     }
 }
 
 struct KeypadView: View {
-    @State private var currentStep: KeypadStep = .runway
+    @AppStorage("runway") private var runway: Int = 18
+    @AppStorage("windDirection") private var windDirection: Int = 210
+    @AppStorage("windSpeed") private var windSpeed: Int = 15
+    @AppStorage("gustSpeed") private var gustSpeed: Int = 15
+    
+    @State private var activeField: KeypadField? = nil
     @State private var inputBuffer: String = ""
-    @State private var runwayValue: Int = 0
-    @State private var windDirValue: Int = 0
-    @State private var windSpdValue: Int = 0
-    @State private var gustValue: Int? = nil
     @State private var errorMessage: String? = nil
     @State private var shakeOffset: CGFloat = 0
+    @State private var dragStartDigit: String? = nil
+    @State private var dragCurrentDigit: String? = nil
+    @State private var digitFrames: [String: CGRect] = [:]
+    
+    private var windDeg: Int { windDirection % 360 }
     
     private var crosswind: Int {
-        let angle = Double(windDirValue - runwayValue * 10) * .pi / 180
-        return abs(Int(round(Double(windSpdValue) * sin(angle))))
+        let angle = Double(windDeg - runway * 10) * .pi / 180
+        return abs(Int(round(Double(windSpeed) * sin(angle))))
     }
     
-    private var gustCrosswind: Int? {
-        guard let gust = gustValue, gust > windSpdValue else { return nil }
-        let angle = Double(windDirValue - runwayValue * 10) * .pi / 180
-        return abs(Int(round(Double(gust) * sin(angle))))
+    private var gustCrosswind: Int {
+        guard gustSpeed > windSpeed else { return crosswind }
+        let angle = Double(windDeg - runway * 10) * .pi / 180
+        return abs(Int(round(Double(gustSpeed) * sin(angle))))
     }
     
     private var headwind: Int {
-        let angle = Double(windDirValue - runwayValue * 10) * .pi / 180
-        return Int(round(Double(windSpdValue) * cos(angle)))
+        let angle = Double(windDeg - runway * 10) * .pi / 180
+        return Int(round(Double(windSpeed) * cos(angle)))
     }
     
     private var side: String {
-        let diff = ((windDirValue - runwayValue * 10) % 360 + 360) % 360
+        let diff = ((windDeg - runway * 10) % 360 + 360) % 360
         if diff > 0 && diff < 180 { return "L" }
         if diff > 180 { return "R" }
         return ""
     }
     
     private var severityColor: Color {
-        let xw = gustCrosswind ?? crosswind
+        let xw = gustSpeed > windSpeed ? gustCrosswind : crosswind
         if xw >= 20 { return .red }
         if xw >= 15 { return .orange }
         return .green
@@ -100,311 +82,310 @@ struct KeypadView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            if currentStep == .result {
-                resultView
-            } else {
-                inputView
+            ScrollView {
+                VStack(spacing: 12) {
+                    CrosswindReadout(
+                        crosswind: crosswind,
+                        gustCrosswind: gustSpeed > windSpeed ? gustCrosswind : nil,
+                        headwind: headwind,
+                        side: side,
+                        color: severityColor,
+                        runway: runway,
+                        windDirection: windDirection,
+                        windSpeed: windSpeed,
+                        gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                    
+                    valueBoxGrid
+                        .padding(.horizontal, 16)
+                }
             }
+            .scrollDismissesKeyboard(.immediately)
+            
+            keypadSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(red: 0.04, green: 0.05, blue: 0.09))
+        .animation(.easeInOut(duration: 0.2), value: activeField)
     }
     
-    private var inputView: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: 24)
-            
-            progressDots
-                .padding(.bottom, 20)
-            
-            Text(currentStep.title)
-                .font(.system(size: 28, weight: .heavy, design: .monospaced))
-                .tracking(4)
-                .foregroundColor(currentStep.color)
-            
-            Text(currentStep.subtitle)
-                .font(.system(size: 17, weight: .medium))
-                .foregroundColor(Color(white: 0.4))
-                .padding(.top, 6)
-            
-            Spacer().frame(height: 24)
-            
-            displayField
-                .offset(x: shakeOffset)
-                .padding(.horizontal, 40)
-            
-            if let error = errorMessage {
-                Text(error)
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.red)
-                    .padding(.top, 8)
-                    .transition(.opacity)
+    // MARK: - Value Box Grid (2x2)
+    
+    private var valueBoxGrid: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                valueBox(field: .runway, displayValue: String(format: "%02d", runway))
+                valueBox(field: .windDirection, displayValue: String(format: "%03d°", windDirection))
             }
-            
-            Spacer().frame(height: 24)
-            
-            summaryBar
-                .padding(.horizontal, 24)
-                .padding(.bottom, 12)
-            
-            keypadGrid
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
-        }
-        .animation(.easeInOut(duration: 0.15), value: currentStep)
-        .animation(.easeInOut(duration: 0.15), value: errorMessage)
-        .animation(.easeInOut(duration: 0.12), value: inputBuffer)
-    }
-    
-    private var progressDots: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<4) { index in
-                Circle()
-                    .fill(index < currentStep.rawValue ? Color.white :
-                          index == currentStep.rawValue ? currentStep.color :
-                          Color(white: 0.2))
-                    .frame(width: index == currentStep.rawValue ? 10 : 8,
-                           height: index == currentStep.rawValue ? 10 : 8)
-                    .animation(.easeInOut(duration: 0.2), value: currentStep)
+            HStack(spacing: 10) {
+                valueBox(field: .windSpeed, displayValue: "\(windSpeed) kt")
+                valueBox(field: .gust, displayValue: gustSpeed > windSpeed ? "\(gustSpeed) kt" : "— kt")
             }
         }
     }
     
-    private var displayField: some View {
-        HStack(spacing: 0) {
-            let maxD = currentStep.maxDigits
-            let chars = Array(inputBuffer)
-            
-            ForEach(0..<maxD, id: \.self) { i in
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(white: 0.08))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(
-                                    i == chars.count ? currentStep.color.opacity(0.8) :
-                                    i < chars.count ? currentStep.color.opacity(0.3) :
-                                    Color(white: 0.15),
-                                    lineWidth: i == chars.count ? 2 : 1
-                                )
-                        )
-                    
-                    if i < chars.count {
-                        Text(String(chars[i]))
-                            .font(.system(size: 48, weight: .heavy, design: .rounded))
-                            .foregroundColor(.white)
-                    } else if i == chars.count {
-                        Rectangle()
-                            .fill(currentStep.color)
-                            .frame(width: 2, height: 36)
-                            .opacity(cursorOpacity)
-                    }
-                }
-                .frame(height: 80)
-                
-                if i < maxD - 1 {
-                    Spacer().frame(width: 10)
-                }
-            }
-            
-            if currentStep == .windDirection {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(white: 0.06))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color(white: 0.1), lineWidth: 1)
-                        )
-                    Text("0")
-                        .font(.system(size: 48, weight: .heavy, design: .rounded))
-                        .foregroundColor(Color(white: 0.25))
-                }
-                .frame(height: 80)
-                .padding(.leading, 4)
-                
-                Text("°")
-                    .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundColor(currentStep.color.opacity(0.5))
-                    .padding(.leading, 4)
-            } else if !currentStep.suffix.isEmpty {
-                Text(currentStep.suffix)
-                    .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundColor(currentStep.color.opacity(0.5))
-                    .padding(.leading, 8)
-            }
-        }
-    }
-    
-    @State private var cursorVisible = true
-    
-    private var cursorOpacity: Double {
-        cursorVisible ? 1.0 : 0.0
-    }
-    
-    private var summaryBar: some View {
-        HStack(spacing: 12) {
-            if runwayValue > 0 {
-                summaryChip(label: "RWY", value: String(format: "%02d", runwayValue),
-                           color: KeypadStep.runway.color)
-            }
-            if windDirValue > 0 {
-                summaryChip(label: "WIND", value: String(format: "%03d°", windDirValue),
-                           color: KeypadStep.windDirection.color)
-            }
-            if currentStep.rawValue > 2 {
-                summaryChip(label: "SPD", value: "\(windSpdValue)kt",
-                           color: KeypadStep.windSpeed.color)
-            }
-            Spacer()
-        }
-    }
-    
-    private func summaryChip(label: String, value: String, color: Color) -> some View {
-        HStack(spacing: 4) {
-            Text(label)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(color.opacity(0.6))
-            Text(value)
-                .font(.system(size: 13, weight: .heavy, design: .monospaced))
-                .foregroundColor(color)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(color.opacity(0.1))
-        )
-    }
-    
-    private var keypadGrid: some View {
-        let buttons: [[KeypadButton]] = [
-            [.digit("1"), .digit("2")],
-            [.digit("3"), .digit("4")],
-            [.digit("5"), .digit("6")],
-            [.digit("7"), .digit("8")],
-            [.digit("9"), .digit("0")],
-            [bottomLeft, .backspace]
-        ]
+    private func valueBox(field: KeypadField, displayValue: String) -> some View {
+        let isActive = activeField == field
         
-        return VStack(spacing: 8) {
-            ForEach(0..<buttons.count, id: \.self) { row in
-                HStack(spacing: 10) {
-                    ForEach(0..<buttons[row].count, id: \.self) { col in
-                        keypadButtonView(buttons[row][col])
+        return Button(action: {
+            if activeField == field {
+                activeField = nil
+                inputBuffer = ""
+                errorMessage = nil
+            } else {
+                activeField = field
+                inputBuffer = ""
+                errorMessage = nil
+            }
+        }) {
+            VStack(spacing: 4) {
+                Text(field.title)
+                    .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                    .tracking(2)
+                    .foregroundColor(field.color.opacity(0.6))
+                
+                if isActive {
+                    Text(inputBuffer.isEmpty ? "_ _" : inputBuffer)
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundColor(inputBuffer.isEmpty ? field.color.opacity(0.3) : .white)
+                        .offset(x: shakeOffset)
+                } else {
+                    Text(displayValue)
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                
+                if isActive, let error = errorMessage {
+                    Text(error)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(.red)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 70)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(white: isActive ? 0.1 : 0.06))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isActive ? field.color : Color(white: 0.12), lineWidth: isActive ? 2 : 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - Keypad Section
+    
+    private let digitLayout: [[String]] = [
+        ["1", "2", "3"],
+        ["4", "5", "6"],
+        ["7", "8", "9"]
+    ]
+    
+    private var keypadSection: some View {
+        let coordSpace = "keypadGrid"
+        
+        return VStack(spacing: 6) {
+            VStack(spacing: 6) {
+                ForEach(0..<digitLayout.count, id: \.self) { row in
+                    HStack(spacing: 8) {
+                        ForEach(0..<digitLayout[row].count, id: \.self) { col in
+                            let digit = digitLayout[row][col]
+                            dragDigitCell(digit: digit, coordSpace: coordSpace)
+                        }
                     }
                 }
+                
+                HStack(spacing: 8) {
+                    backspaceButton
+                    dragDigitCell(digit: "0", coordSpace: coordSpace)
+                    enterButton
+                }
             }
+            .coordinateSpace(name: coordSpace)
+            .gesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .named(coordSpace))
+                    .onChanged { value in
+                        let hitDigit = digitAtPoint(value.location)
+                        
+                        if dragStartDigit == nil {
+                            if let digit = digitAtPoint(value.startLocation), isDigitEnabled(digit) {
+                                dragStartDigit = digit
+                                dragCurrentDigit = digit
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            }
+                        } else if let hit = hitDigit, hit != dragCurrentDigit {
+                            dragCurrentDigit = hit
+                            if hit != dragStartDigit {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            }
+                        }
+                    }
+                    .onEnded { _ in
+                        guard let startDigit = dragStartDigit else {
+                            resetDragState()
+                            return
+                        }
+                        
+                        let endDigit = dragCurrentDigit
+                        
+                        if let end = endDigit, end != startDigit {
+                            inputBuffer = startDigit
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                inputBuffer += end
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                if let field = activeField, inputBuffer.count == field.maxDigits {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                        validateAndApply()
+                                    }
+                                }
+                            }
+                        } else {
+                            digitPressed(startDigit)
+                        }
+                        
+                        resetDragState()
+                    }
+            )
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
         }
-        .frame(maxHeight: .infinity)
+        .background(Color(red: 0.06, green: 0.07, blue: 0.11))
     }
     
-    private var bottomLeft: KeypadButton {
-        if currentStep == .gust {
-            return .skip
-        }
-        return .empty
+    private func dragDigitCell(digit: String, coordSpace: String) -> some View {
+        let enabled = isDigitEnabled(digit)
+        let isStart = dragStartDigit == digit
+        let isCurrent = dragCurrentDigit == digit && dragStartDigit != nil && dragCurrentDigit != dragStartDigit
+        
+        return Text(digit)
+            .font(.system(size: 32, weight: .bold, design: .rounded))
+            .foregroundColor(!enabled ? Color(white: 0.2) :
+                            isStart ? (activeField?.color ?? .white) :
+                            isCurrent ? (activeField?.color ?? .white) :
+                            .white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .background(
+                GeometryReader { geo in
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(!enabled ? Color(white: 0.06) :
+                              isStart ? (activeField?.color ?? .white).opacity(0.25) :
+                              isCurrent ? (activeField?.color ?? .white).opacity(0.15) :
+                              Color(white: 0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(isStart || isCurrent ? (activeField?.color ?? .white).opacity(0.6) : Color.clear, lineWidth: 2)
+                        )
+                        .onAppear {
+                            DispatchQueue.main.async {
+                                digitFrames[digit] = geo.frame(in: .named(coordSpace))
+                            }
+                        }
+                        .onChange(of: geo.frame(in: .named(coordSpace))) { newFrame in
+                            digitFrames[digit] = newFrame
+                        }
+                }
+            )
     }
     
-    private func keypadButtonView(_ button: KeypadButton) -> some View {
-        Group {
-            switch button {
-            case .digit(let d):
-                let enabled = isDigitEnabled(d)
-                Button(action: { digitPressed(d) }) {
-                    Text(d)
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundColor(enabled ? .white : Color(white: 0.2))
-                        .frame(maxWidth: .infinity)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(enabled ? Color(white: 0.12) : Color(white: 0.06))
-                        )
-                }
-                .disabled(!enabled)
-                
-            case .backspace:
-                Button(action: { backspacePressed() }) {
-                    Image(systemName: "delete.left.fill")
-                        .font(.system(size: 30, weight: .semibold))
-                        .foregroundColor(inputBuffer.isEmpty ? Color(white: 0.25) : .white)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(white: 0.08))
-                        )
-                }
-                .disabled(inputBuffer.isEmpty)
-                
-            case .skip:
-                Button(action: { skipPressed() }) {
-                    Text("NONE")
-                        .font(.system(size: 20, weight: .heavy, design: .monospaced))
-                        .tracking(2)
-                        .foregroundColor(Color(white: 0.5))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(white: 0.08))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color(white: 0.15), lineWidth: 1)
-                                )
-                        )
-                }
-                
-            case .empty:
-                Color.clear
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    private func digitAtPoint(_ point: CGPoint) -> String? {
+        for (digit, frame) in digitFrames {
+            if frame.contains(point) { return digit }
+        }
+        return nil
+    }
+    
+    private func resetDragState() {
+        dragStartDigit = nil
+        dragCurrentDigit = nil
+    }
+    
+    private var backspaceButton: some View {
+        Button(action: { backspacePressed() }) {
+            Image(systemName: "delete.left.fill")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(inputBuffer.isEmpty ? Color(white: 0.25) : .white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(white: 0.08))
+                )
+        }
+        .disabled(inputBuffer.isEmpty)
+    }
+    
+    private var enterButton: some View {
+        let field = activeField
+        let isGustField = field == .gust
+        let hasInput = !inputBuffer.isEmpty
+        
+        return Button(action: {
+            if hasInput {
+                validateAndApply()
+            } else if isGustField {
+                gustSpeed = windSpeed
+                activeField = nil
+                inputBuffer = ""
             }
+        }) {
+            Text(hasInput ? "OK" : (isGustField ? "NONE" : "OK"))
+                .font(.system(size: 18, weight: .heavy, design: .monospaced))
+                .tracking(1)
+                .foregroundColor(hasInput ? .black : Color(white: 0.5))
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(hasInput ? (activeField?.color ?? .white) : Color(white: 0.08))
+                )
         }
     }
+    
+    // MARK: - Input Logic
     
     private func isDigitEnabled(_ digit: String) -> Bool {
-        guard let d = Int(digit) else { return false }
+        guard let field = activeField, let d = Int(digit) else { return false }
         
-        switch currentStep {
+        switch field {
         case .runway, .windDirection:
             if inputBuffer.isEmpty {
-                if d == 0 { return false }
-                return true
+                return d >= 1
             }
             if inputBuffer.count == 1 {
                 guard let first = Int(inputBuffer) else { return true }
-                if first == 0 {
-                    return d >= 1 && d <= 9
-                }
-                if first == 1 || first == 2 {
-                    return d >= 0 && d <= 9
-                }
-                if first == 3 {
-                    return d >= 0 && d <= 6
-                }
+                if first <= 2 { return true }
+                if first == 3 { return d <= 6 }
                 return true
             }
-            return true
+            return false
             
         case .windSpeed, .gust:
+            if inputBuffer.count >= 2 { return false }
             return true
-            
-        case .result:
-            return false
         }
     }
     
     private func digitPressed(_ digit: String) {
+        guard let field = activeField else { return }
         errorMessage = nil
         
-        guard inputBuffer.count < currentStep.maxDigits else { return }
+        guard inputBuffer.count < field.maxDigits else { return }
         guard isDigitEnabled(digit) else { return }
         
         guard let d = Int(digit) else { return }
         
-        if (currentStep == .runway || currentStep == .windDirection) && inputBuffer.isEmpty && d >= 4 && d <= 9 {
+        if (field == .runway || field == .windDirection) && inputBuffer.isEmpty && d >= 4 {
             inputBuffer = "0" + digit
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                validateAndAdvance()
+                validateAndApply()
             }
             return
         }
@@ -412,9 +393,9 @@ struct KeypadView: View {
         inputBuffer += digit
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         
-        if inputBuffer.count == currentStep.maxDigits {
+        if inputBuffer.count == field.maxDigits {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                validateAndAdvance()
+                validateAndApply()
             }
         }
     }
@@ -426,66 +407,58 @@ struct KeypadView: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    private func skipPressed() {
-        gustValue = nil
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        withAnimation { currentStep = .result }
-    }
-    
-    private func validateAndAdvance() {
-        guard let val = Int(inputBuffer) else {
-            showError("Invalid entry")
+    private func validateAndApply() {
+        guard let field = activeField, let val = Int(inputBuffer) else {
+            showError("Invalid")
             return
         }
         
-        switch currentStep {
+        switch field {
         case .runway:
             if val < 1 || val > 36 {
-                showError("Enter 01–36")
+                showError("01–36")
                 return
             }
-            runwayValue = val
-            inputBuffer = ""
-            withAnimation { currentStep = .windDirection }
+            runway = val
             
         case .windDirection:
             if val < 1 || val > 36 {
-                showError("Enter 01–36")
+                showError("01–36")
                 return
             }
-            windDirValue = val * 10
-            inputBuffer = ""
-            withAnimation { currentStep = .windSpeed }
+            windDirection = val * 10
             
         case .windSpeed:
-            if val < 0 || val > 99 {
-                showError("Enter 0–99")
+            if val > 99 {
+                showError("0–99")
                 return
             }
-            windSpdValue = val
-            inputBuffer = ""
-            withAnimation { currentStep = .gust }
+            windSpeed = val
+            if gustSpeed < val { gustSpeed = val }
             
         case .gust:
-            if val < windSpdValue {
-                showError("Must be ≥ \(windSpdValue) kt")
+            if val < windSpeed {
+                showError("≥ \(windSpeed)")
                 return
             }
-            gustValue = val > windSpdValue ? val : nil
-            inputBuffer = ""
-            withAnimation { currentStep = .result }
-            
-        case .result:
-            break
+            gustSpeed = val
+        }
+        
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        inputBuffer = ""
+        errorMessage = nil
+        
+        if let next = KeypadField(rawValue: field.rawValue + 1) {
+            activeField = next
+        } else {
+            activeField = nil
         }
     }
     
     private func showError(_ message: String) {
         errorMessage = message
         inputBuffer = ""
-        withAnimation(.default) {
-            shakeOffset = 12
-        }
+        withAnimation(.default) { shakeOffset = 12 }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
             withAnimation(.default) { shakeOffset = -10 }
         }
@@ -497,69 +470,4 @@ struct KeypadView: View {
         }
         UINotificationFeedbackGenerator().notificationOccurred(.error)
     }
-    
-    private var resultView: some View {
-        VStack(spacing: 16) {
-            Spacer().frame(height: 20)
-            
-            CrosswindReadout(
-                crosswind: crosswind,
-                gustCrosswind: gustCrosswind,
-                headwind: headwind,
-                side: side,
-                color: severityColor,
-                runway: runwayValue,
-                windDirection: windDirValue,
-                windSpeed: windSpdValue,
-                gustSpeed: gustValue
-            )
-            .padding(.horizontal, 16)
-            
-            Spacer()
-            
-            Button(action: { resetAll() }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.counterclockwise")
-                        .font(.system(size: 18, weight: .bold))
-                    Text("NEW CALCULATION")
-                        .font(.system(size: 15, weight: .heavy, design: .monospaced))
-                        .tracking(2)
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color(white: 0.12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color(white: 0.2), lineWidth: 1)
-                        )
-                )
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 40)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    private func resetAll() {
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        withAnimation {
-            currentStep = .runway
-            inputBuffer = ""
-            runwayValue = 0
-            windDirValue = 0
-            windSpdValue = 0
-            gustValue = nil
-            errorMessage = nil
-        }
-    }
-}
-
-enum KeypadButton {
-    case digit(String)
-    case backspace
-    case skip
-    case empty
 }

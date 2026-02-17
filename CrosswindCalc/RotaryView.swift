@@ -163,7 +163,9 @@ struct RotaryView: View {
                     knobID: .speed,
                     activeKnob: $activeKnob,
                     suffix: "kt",
-                    dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)]
+                    dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)],
+                    tickDivisions: 13,
+                    minorTickDivisions: 61
                 )
                 
                 RotaryKnob(
@@ -178,7 +180,9 @@ struct RotaryView: View {
                     activeKnob: $activeKnob,
                     suffix: "kt",
                     minValue: windSpeed,
-                    dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)]
+                    dialLabels: [("0", 0), ("10", 60), ("20", 120), ("30", 180), ("40", 240), ("50", 300)],
+                    tickDivisions: 13,
+                    minorTickDivisions: 61
                 )
             }
         }
