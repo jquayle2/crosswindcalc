@@ -82,27 +82,24 @@ struct KeypadView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 12) {
-                    CrosswindReadout(
-                        crosswind: crosswind,
-                        gustCrosswind: gustSpeed > windSpeed ? gustCrosswind : nil,
-                        headwind: headwind,
-                        side: side,
-                        color: severityColor,
-                        runway: runway,
-                        windDirection: windDirection,
-                        windSpeed: windSpeed,
-                        gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
-                    )
+            VStack(spacing: 12) {
+                CrosswindReadout(
+                    crosswind: crosswind,
+                    gustCrosswind: gustSpeed > windSpeed ? gustCrosswind : nil,
+                    headwind: headwind,
+                    side: side,
+                    color: severityColor,
+                    runway: runway,
+                    windDirection: windDirection,
+                    windSpeed: windSpeed,
+                    gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                
+                valueBoxGrid
                     .padding(.horizontal, 16)
-                    .padding(.top, 12)
-                    
-                    valueBoxGrid
-                        .padding(.horizontal, 16)
-                }
             }
-            .scrollDismissesKeyboard(.immediately)
             
             keypadSection
         }
@@ -255,6 +252,7 @@ struct KeypadView: View {
             .padding(.top, 8)
             .padding(.bottom, 16)
         }
+        .frame(maxHeight: .infinity)
         .background(Color(red: 0.06, green: 0.07, blue: 0.11))
     }
     
@@ -269,8 +267,7 @@ struct KeypadView: View {
                             isStart ? (activeField?.color ?? .white) :
                             isCurrent ? (activeField?.color ?? .white) :
                             .white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
             .background(
                 GeometryReader { geo in
                     RoundedRectangle(cornerRadius: 10)
@@ -311,8 +308,7 @@ struct KeypadView: View {
             Image(systemName: "delete.left.fill")
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundColor(inputBuffer.isEmpty ? Color(white: 0.25) : .white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
+                .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color(white: 0.08))
@@ -339,8 +335,7 @@ struct KeypadView: View {
                 .font(.system(size: 18, weight: .heavy, design: .monospaced))
                 .tracking(1)
                 .foregroundColor(hasInput ? .black : Color(white: 0.5))
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
+                .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(hasInput ? (activeField?.color ?? .white) : Color(white: 0.08))
