@@ -16,7 +16,7 @@ struct VSpeedView: View {
     private let vaAtMGW: Double = 123
     private let vs1AtMGW: Double = 55    // clean stall
     private let vsoAtMGW: Double = 51    // dirty stall
-    private let bestGlideAtMGW: Double = 999  // TODO: placeholder
+    private let bestGlideAtMGW: Double = 97   // best glide
     private let vfeFullAtMGW: Double = 96   // max flap extended
     private let vfePartialAtMGW: Double = 86 // partial flap
     
