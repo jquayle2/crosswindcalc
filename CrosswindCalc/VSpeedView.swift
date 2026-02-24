@@ -7,10 +7,8 @@ struct VSpeedView: View {
     private let maxGross: Double = 1800
     private let fuelCapacity: Double = 42    // gallons
     private let fuelWeight: Double = 6.0     // lbs per gallon
-    private let smokeCapacity: Double = 3.5  // gallons
-    private let smokeWeight: Double = 8.0    // lbs per gallon
-    private let maxBaggage: Double = 100
-    private let baggageCaution: Double = 70
+    private let paxOptions: [Double] = [100, 130, 160, 200]
+    private let baggageOptions: [Double] = [0, 25, 45, 70]
     
     // MGW reference speeds (KIAS at 1800 lbs)
     private let vaAtMGW: Double = 123
@@ -22,7 +20,6 @@ struct VSpeedView: View {
     
     // MARK: - State
     @AppStorage("vspeed_fuel") private var fuelGallons: Double = 42
-    @AppStorage("vspeed_smoke") private var smokeGallons: Double = 3.5
     @AppStorage("vspeed_baggage") private var baggage: Double = 0
     @AppStorage("vspeed_pax") private var paxWeight: Double = 0
     
@@ -32,10 +29,9 @@ struct VSpeedView: View {
     // MARK: - Calculations
     
     private var fuelLbs: Double { fuelGallons * fuelWeight }
-    private var smokeLbs: Double { smokeGallons * smokeWeight }
     
     private var currentWeight: Double {
-        emptyWeight + pilotWeight + fuelLbs + smokeLbs + paxWeight + baggage
+        emptyWeight + pilotWeight + fuelLbs + paxWeight + baggage
     }
     
     private var weightRatio: Double {
@@ -193,73 +189,64 @@ struct VSpeedView: View {
                 .tracking(3)
                 .foregroundColor(cyan.opacity(0.6))
             
-            sliderInput(
-                label: "FUEL",
-                value: $fuelGallons,
-                range: 0...fuelCapacity,
-                displayValue: "\(String(format: "%.1f", fuelGallons)) gal  (\(Int(fuelLbs)) lbs)",
-                color: cyan
-            )
-            
-            sliderInput(
-                label: "SMOKE OIL",
-                value: $smokeGallons,
-                range: 0...smokeCapacity,
-                displayValue: "\(String(format: "%.1f", smokeGallons)) gal  (\(Int(smokeLbs)) lbs)",
-                color: cyan
-            )
-            
-            sliderInput(
-                label: "PAX",
-                value: $paxWeight,
-                range: 0...250,
-                displayValue: "\(Int(paxWeight)) lbs",
-                color: cyan
-            )
-            
-            sliderInput(
-                label: "BAGGAGE",
-                value: $baggage,
-                range: 0...maxBaggage,
-                displayValue: "\(Int(baggage)) lbs",
-                color: baggage > baggageCaution ? .orange : cyan,
-                warning: baggage > baggageCaution ? "CAUTION" : nil
-            )
+            fuelSlider
+            buttonRow(label: "PAX", value: $paxWeight, options: paxOptions, unit: "lbs", color: cyan)
+            buttonRow(label: "BAGGAGE", value: $baggage, options: baggageOptions, unit: "lbs", color: cyan)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
         .background(panelColor.cornerRadius(12))
     }
     
-    private func sliderInput(
-        label: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        displayValue: String,
-        color: Color,
-        warning: String? = nil
-    ) -> some View {
+    private var fuelSlider: some View {
         VStack(spacing: 6) {
             HStack {
-                Text(label)
+                Text("FUEL")
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(color)
+                    .foregroundColor(cyan)
                 
                 Spacer()
                 
-                if let warning = warning {
-                    Text(warning)
-                        .font(.system(size: 10, weight: .heavy, design: .monospaced))
-                        .foregroundColor(.orange)
-                }
-                
-                Text(displayValue)
+                Text("\(String(format: "%.1f", fuelGallons)) gal  (\(Int(fuelLbs)) lbs)")
                     .font(.system(size: 14, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white)
             }
             
-            Slider(value: value, in: range)
-                .tint(color)
+            Slider(value: $fuelGallons, in: 0...fuelCapacity)
+                .tint(cyan)
+        }
+    }
+    
+    private func buttonRow(label: String, value: Binding<Double>, options: [Double], unit: String, color: Color) -> some View {
+        VStack(spacing: 8) {
+            Text(label)
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .foregroundColor(color)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            HStack(spacing: 8) {
+                ForEach(options, id: \.self) { option in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            value.wrappedValue = value.wrappedValue == option ? 0 : option
+                        }
+                    }) {
+                        Text("\(Int(option))")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(value.wrappedValue == option ? color.opacity(0.25) : Color(white: 0.06))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(value.wrappedValue == option ? color : Color(white: 0.15), lineWidth: value.wrappedValue == option ? 2 : 1)
+                            )
+                            .foregroundColor(value.wrappedValue == option ? color : Color(white: 0.4))
+                    }
+                }
+            }
         }
     }
     
