@@ -19,6 +19,7 @@ struct FeedbackView: View {
     @State private var isSubmitting: Bool = false
     @State private var submitError: String? = nil
     @FocusState private var textFieldFocused: Bool
+    @Environment(\.appTheme) private var theme
     
     private var deviceID: String {
         UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
@@ -44,7 +45,7 @@ struct FeedbackView: View {
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 0.04, green: 0.05, blue: 0.09))
+        .background(theme.mainBackground)
         .onTapGesture { textFieldFocused = false }
     }
     
@@ -57,7 +58,7 @@ struct FeedbackView: View {
             
             Text("Try both input methods then\nhelp us decide what to keep")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(white: 0.45))
+                .foregroundColor(theme.secondaryText)
                 .multilineTextAlignment(.center)
             
             surveyQuestion(
@@ -93,21 +94,21 @@ struct FeedbackView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Anything you'd change or like to see added?")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.primaryText)
                 
                 TextEditor(text: $surveyChanges)
                     .font(.system(size: 15))
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.primaryText)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 80)
                     .padding(10)
                     .focused($textFieldFocused)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(white: 0.08))
+                            .fill(theme.inputBackground)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color(white: 0.2), lineWidth: 1)
+                                    .stroke(theme.textEditorBorder, lineWidth: 1)
                             )
                     )
             }
@@ -136,7 +137,7 @@ struct FeedbackView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(surveyComplete ?
                               Color(red: 0.94, green: 0.75, blue: 0.25) :
-                              Color(white: 0.2))
+                              theme.disabledButtonFill)
                 )
             }
             .disabled(!surveyComplete || isSubmitting)
@@ -155,7 +156,7 @@ struct FeedbackView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.system(size: 15, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(theme.primaryText)
             
             ForEach(options, id: \.self) { option in
                 Button(action: { selection.wrappedValue = option }) {
@@ -165,12 +166,12 @@ struct FeedbackView: View {
                             .font(.system(size: 20))
                             .foregroundColor(selection.wrappedValue == option ?
                                 Color(red: 0.94, green: 0.75, blue: 0.25) :
-                                Color(white: 0.25))
+                                theme.surveyOptionUnselected)
                         
                         Text(option)
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(selection.wrappedValue == option ?
-                                .white : Color(white: 0.5))
+                                theme.primaryText : theme.surveyOptionText)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 4)
@@ -180,7 +181,7 @@ struct FeedbackView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(white: 0.06))
+                .fill(theme.cardBackground)
         )
     }
     
@@ -195,11 +196,11 @@ struct FeedbackView: View {
             Text("THANK YOU!")
                 .font(.system(size: 28, weight: .heavy, design: .monospaced))
                 .tracking(4)
-                .foregroundColor(.white)
+                .foregroundColor(theme.primaryText)
             
             Text("Your feedback helps make\nCrosswindCalc better for all pilots")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(white: 0.5))
+                .foregroundColor(theme.secondaryText)
                 .multilineTextAlignment(.center)
             
             Spacer().frame(height: 40)
@@ -214,15 +215,15 @@ struct FeedbackView: View {
                         .font(.system(size: 14, weight: .heavy, design: .monospaced))
                         .tracking(1)
                 }
-                .foregroundColor(Color(white: 0.5))
+                .foregroundColor(theme.secondaryText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(white: 0.08))
+                        .fill(theme.actionButtonBackground)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color(white: 0.15), lineWidth: 1)
+                                .stroke(theme.subtleBorder, lineWidth: 1)
                         )
                 )
             }
@@ -237,15 +238,15 @@ struct FeedbackView: View {
                         .font(.system(size: 14, weight: .heavy, design: .monospaced))
                         .tracking(1)
                 }
-                .foregroundColor(Color(white: 0.5))
+                .foregroundColor(theme.secondaryText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(white: 0.08))
+                        .fill(theme.actionButtonBackground)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color(white: 0.15), lineWidth: 1)
+                                .stroke(theme.subtleBorder, lineWidth: 1)
                         )
                 )
             }

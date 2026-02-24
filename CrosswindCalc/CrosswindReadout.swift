@@ -10,6 +10,7 @@ struct CrosswindReadout: View {
     let windDirection: Int
     let windSpeed: Int
     let gustSpeed: Int?
+    @Environment(\.appTheme) private var theme
     
     private var gustAddKts: Int? {
         guard let gust = gustSpeed, gust > windSpeed else { return nil }
@@ -22,9 +23,8 @@ struct CrosswindReadout: View {
             Text("CROSSWIND")
                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                 .tracking(4)
-                .foregroundColor(Color(white: 0.4))
+                .foregroundColor(theme.dimText)
             
-            // Main crosswind number with arrows
             HStack(spacing: 6) {
                 if side == "L" {
                     Image(systemName: "arrow.right")
@@ -56,9 +56,7 @@ struct CrosswindReadout: View {
             .minimumScaleFactor(0.5)
             .lineLimit(1)
             
-            // Headwind/Tailwind line
             if headwind < 0 {
-                // TAILWIND WARNING - make it scream
                 VStack(spacing: 4) {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -75,37 +73,35 @@ struct CrosswindReadout: View {
                 .padding(.horizontal, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.red.opacity(0.12))
+                        .fill(Color.red.opacity(theme.tailwindBackgroundOpacity))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.red.opacity(0.4), lineWidth: 1)
+                                .stroke(Color.red.opacity(theme.tailwindStrokeOpacity), lineWidth: 1)
                         )
                 )
             } else {
                 HStack(spacing: 6) {
                     Text("HEADWIND")
-                        .foregroundColor(Color(white: 0.45))
+                        .foregroundColor(theme.secondaryText)
                     Text("\(abs(headwind)) kt")
                         .foregroundColor(.green)
                 }
                 .font(.system(size: 22, weight: .bold, design: .monospaced))
             }
             
-            // Winds line below
             HStack(spacing: 10) {
                 Text("RWY \(String(format: "%02d", runway))")
-                    .foregroundColor(Color(white: 0.35))
-                Text("·").foregroundColor(Color(white: 0.2))
+                    .foregroundColor(theme.tertiaryText)
+                Text("·").foregroundColor(theme.disabledText)
                 Group {
                     let dir = windDirection == 0 ? 360 : windDirection
                     let g = gustSpeed.map { "G\($0)" } ?? ""
                     Text("\(String(format: "%03d", dir))@\(windSpeed)\(g)")
-                        .foregroundColor(Color(white: 0.35))
+                        .foregroundColor(theme.tertiaryText)
                 }
             }
             .font(.system(size: 15, weight: .semibold, design: .monospaced))
             
-            // Advisories
             VStack(spacing: 4) {
                 if let addKts = gustAddKts {
                     Text("Increase Vref by \(addKts) kt")
@@ -126,10 +122,10 @@ struct CrosswindReadout: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(white: 0.04))
+                .fill(theme.panelBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(color.opacity(0.15), lineWidth: 1)
+                        .stroke(color.opacity(theme.panelStrokeOpacity), lineWidth: 1)
                 )
         )
     }

@@ -12,6 +12,7 @@ struct RotaryView: View {
     
     @State private var activeKnob: KnobID? = nil
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.appTheme) private var theme
     
     private var windDeg: Int { windDirection % 360 }
     
@@ -71,7 +72,7 @@ struct RotaryView: View {
         case .wind: return Color(red: 0.22, green: 0.74, blue: 0.97)
         case .speed: return Color(red: 0.22, green: 0.74, blue: 0.97)
         case .gust: return Color(red: 1.0, green: 0.58, blue: 0.0)
-        case nil: return .white
+        case nil: return theme.primaryText
         }
     }
     
@@ -114,7 +115,7 @@ struct RotaryView: View {
         .clipped()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(white: 0.04))
+                .fill(theme.panelBackground)
         )
         .animation(.easeInOut(duration: 0.15), value: activeKnob)
     }
@@ -218,7 +219,7 @@ struct RotaryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 0.04, green: 0.05, blue: 0.09))
+        .background(theme.mainBackground)
         .onChange(of: windSpeed) { _, newValue in
             if gustSpeed < newValue { gustSpeed = newValue }
         }
