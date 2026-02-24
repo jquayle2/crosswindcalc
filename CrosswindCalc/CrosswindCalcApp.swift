@@ -31,6 +31,9 @@ struct MainTabView: View {
                     } else if selectedTab == 2 {
                         VSpeedView()
                             .transition(.opacity)
+                    } else if selectedTab == 3 {
+                        PerfView()
+                            .transition(.opacity)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -55,6 +58,7 @@ struct MainTabView: View {
             tabButton(icon: "number.square.fill", label: "Keypad", index: 1)
             if FeatureFlags.showVSpeedPage {
                 tabButton(icon: "gauge.with.needle.fill", label: "V-Speed", index: 2)
+                tabButton(icon: "ruler.fill", label: "Perf", index: 3)
             }
         }
         .padding(.horizontal, 40)
