@@ -14,8 +14,8 @@
 		A1000007 /* RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017 /* RotaryKnob.swift */; };
 		A100000A /* KeypadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A /* KeypadView.swift */; };
 		A100000B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001B /* OnboardingView.swift */; };
-		A100000C /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C /* FeedbackView.swift */; };
-		CD514CE52F4D276300ADDD8B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD514CE42F4D276300ADDD8B /* Theme.swift */; };
+		CD5150622F4E4A4900ADDD8B /* VSpeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */; };
+		CD5150632F4E4A4900ADDD8B /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,8 +27,8 @@
 		A1000017 /* RotaryKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotaryKnob.swift; sourceTree = "<group>"; };
 		A100001A /* KeypadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeypadView.swift; sourceTree = "<group>"; };
 		A100001B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
-		A100001C /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
-		CD514CE42F4D276300ADDD8B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
+		CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VSpeedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,14 +53,14 @@
 		A1000031 /* CrosswindCalc */ = {
 			isa = PBXGroup;
 			children = (
-				CD514CE42F4D276300ADDD8B /* Theme.swift */,
+				CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */,
+				CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */,
 				A1000011 /* CrosswindCalcApp.swift */,
 				A1000013 /* CrosswindReadout.swift */,
 				A1000016 /* RotaryView.swift */,
 				A1000017 /* RotaryKnob.swift */,
 				A100001A /* KeypadView.swift */,
 				A100001B /* OnboardingView.swift */,
-				A100001C /* FeedbackView.swift */,
 				A1000015 /* Assets.xcassets */,
 			);
 			path = CrosswindCalc;
@@ -144,13 +144,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000001 /* CrosswindCalcApp.swift in Sources */,
-				CD514CE52F4D276300ADDD8B /* Theme.swift in Sources */,
 				A1000003 /* CrosswindReadout.swift in Sources */,
 				A1000006 /* RotaryView.swift in Sources */,
 				A1000007 /* RotaryKnob.swift in Sources */,
+				CD5150622F4E4A4900ADDD8B /* VSpeedView.swift in Sources */,
+				CD5150632F4E4A4900ADDD8B /* FeatureFlags.swift in Sources */,
 				A100000A /* KeypadView.swift in Sources */,
 				A100000B /* OnboardingView.swift in Sources */,
-				A100000C /* FeedbackView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

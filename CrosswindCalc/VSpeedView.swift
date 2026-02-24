@@ -2,7 +2,7 @@ import SwiftUI
 
 struct VSpeedView: View {
     // MARK: - Aircraft constants (RV-7)
-    private let emptyWeight: Double = 1309
+    private let emptyWeight: Double = 1096
     private let pilotWeight: Double = 178
     private let maxGross: Double = 1800
     private let fuelCapacity: Double = 42    // gallons
