@@ -8,7 +8,7 @@ struct VSpeedView: View {
     private let fuelCapacity: Double = 42    // gallons
     private let fuelWeight: Double = 6.0     // lbs per gallon
     private let paxOptions: [Double] = [100, 130, 160, 200]
-    private let baggageOptions: [Double] = [0, 25, 45, 70]
+    private let baggageOptions: [Double] = [25, 50, 75, 100]
     
     // MGW reference speeds (KIAS at 1800 lbs)
     private let vaAtMGW: Double = 123
