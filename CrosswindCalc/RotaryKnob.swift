@@ -12,6 +12,7 @@ struct RotaryKnob: View {
     @Binding var activeKnob: KnobID?
     var suffix: String = ""
     var minValue: Int? = nil
+    var onCenterTap: (() -> Void)? = nil
     var dialLabels: [(String, CGFloat)]? = nil
     var dotBetweenTicks: Bool = false
     var tickDivisions: Int? = nil
@@ -306,6 +307,12 @@ struct RotaryKnob: View {
                                       design: .monospaced))
                         .foregroundColor(color.opacity(0.5))
                 }
+            }
+        }
+        .onTapGesture {
+            if let action = onCenterTap {
+                action()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
         }
     }
