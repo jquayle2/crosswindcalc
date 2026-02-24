@@ -2,9 +2,12 @@ import SwiftUI
 
 @main
 struct CrosswindCalcApp: App {
+    @StateObject private var sharedWeight = SharedWeight()
+    
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .environmentObject(sharedWeight)
                 .preferredColorScheme(.dark)
         }
     }

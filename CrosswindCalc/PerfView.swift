@@ -1,56 +1,39 @@
 import SwiftUI
 
 struct PerfView: View {
-    // MARK: - Aircraft constants (RV-7)
-    private let emptyWeight: Double = 1096
-    private let pilotWeight: Double = 178
-    private let maxGross: Double = 1800
-    private let fuelCapacity: Double = 42
-    private let fuelWeight: Double = 6.0
-    private let paxOptions: [Double] = [100, 130, 160, 200]
-    private let baggageOptions: [Double] = [25, 50, 75, 100]
+    @EnvironmentObject var weight: SharedWeight
+    @StateObject private var metarService = MetarService()
     
     // Sea level / standard day / MGW baseline distances (ft)
     private let toDistBaseline: Double = 575
     private let ldgDistBaseline: Double = 500
     
-    // DA options
-    private let daOptions: [Int] = [0, 1000, 2000, 3000, 4000, 5000]
-    
-    // MARK: - State
-    @AppStorage("perf_fuel") private var fuelGallons: Double = 42
-    @AppStorage("perf_baggage") private var baggage: Double = 0
-    @AppStorage("perf_pax") private var paxWeight: Double = 0
-    @AppStorage("perf_da") private var densityAltitude: Int = 0
+    // Manual DA options
+    private let daOptions: [Int] = [4000, 6000, 8000, 10000, 12000]
+    @State private var manualDA: Int? = nil
+    @State private var useAutoDA: Bool = false
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
     
     // MARK: - Calculations
     
-    private var fuelLbs: Double { fuelGallons * fuelWeight }
-    
-    private var currentWeight: Double {
-        emptyWeight + pilotWeight + fuelLbs + paxWeight + baggage
+    private var activeDensityAltitude: Int {
+        if useAutoDA, let autoDA = metarService.densityAltitude {
+            return autoDA
+        }
+        return manualDA ?? 0
     }
     
-    private var weightRatio: Double { currentWeight / maxGross }
+    // DA adjustment: ~1% per 100ft DA
+    private var daFactor: Double { 1.0 + (Double(activeDensityAltitude) / 100.0 * 0.01) }
+    private var weightFactor: Double { weight.weightRatio }
     
-    // DA adjustment: ~1% per 100ft DA (conservative Koch chart approximation)
-    private var daFactor: Double { 1.0 + (Double(densityAltitude) / 100.0 * 0.01) }
-    
-    // Weight adjustment: distance scales roughly with weight ratio
-    private var weightFactor: Double { weightRatio }
-    
-    // Combined adjusted distances
     private var toDistance: Int { Int(round(toDistBaseline * weightFactor * daFactor)) }
     private var ldgDistance: Int { Int(round(ldgDistBaseline * weightFactor * daFactor)) }
     
-    // Percentage change from baseline
     private var toPctChange: Double { (Double(toDistance) / toDistBaseline - 1.0) * 100.0 }
     private var ldgPctChange: Double { (Double(ldgDistance) / ldgDistBaseline - 1.0) * 100.0 }
-    
-    private var isOverGross: Bool { currentWeight > maxGross }
     
     // MARK: - Colors
     private let amber = Color(red: 0.94, green: 0.75, blue: 0.25)
@@ -65,7 +48,7 @@ struct PerfView: View {
             VStack(spacing: 16) {
                 distancesPanel
                 daPanel
-                weightInputsPanel
+                weightPanel
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -89,16 +72,16 @@ struct PerfView: View {
                 distanceBlock(label: "LANDING", distance: ldgDistance, pctChange: ldgPctChange)
             }
             
-            if isOverGross {
-                Text("⚠ OVER GROSS BY \(Int(currentWeight - maxGross)) LBS")
+            if weight.isOverGross {
+                Text("OVER GROSS BY \(Int(weight.currentWeight - weight.maxGross)) LBS")
                     .font(.system(size: 14, weight: .heavy, design: .monospaced))
                     .foregroundColor(.red)
             }
             
             HStack(spacing: 4) {
-                Text("\(Int(currentWeight)) lbs")
+                Text("\(Int(weight.currentWeight)) lbs")
                     .foregroundColor(.white)
-                Text("  DA \(densityAltitude) ft")
+                Text("  DA \(activeDensityAltitude) ft")
                     .foregroundColor(Color(white: 0.4))
             }
             .font(.system(size: 12, weight: .medium, design: .monospaced))
@@ -135,34 +118,63 @@ struct PerfView: View {
     // MARK: - DA Panel
     
     private var daPanel: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             Text("DENSITY ALTITUDE")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(cyan)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .tracking(3)
+                .foregroundColor(cyan.opacity(0.6))
             
+            // Auto METAR button
+            metarButton
+            
+            // Manual DA buttons
             HStack(spacing: 6) {
                 ForEach(daOptions, id: \.self) { da in
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.15)) {
-                            densityAltitude = da
+                            useAutoDA = false
+                            manualDA = manualDA == da ? nil : da
                         }
                     }) {
-                        Text(da == 0 ? "SL" : "\(da / 1000)k")
+                        Text("\(da / 1000)k")
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .fill(densityAltitude == da ? cyan.opacity(0.25) : Color(white: 0.06))
+                                    .fill(!useAutoDA && manualDA == da ? cyan.opacity(0.25) : Color(white: 0.06))
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(densityAltitude == da ? cyan : Color(white: 0.15), lineWidth: densityAltitude == da ? 2 : 1)
+                                    .stroke(!useAutoDA && manualDA == da ? cyan : Color(white: 0.15), lineWidth: !useAutoDA && manualDA == da ? 2 : 1)
                             )
-                            .foregroundColor(densityAltitude == da ? cyan : Color(white: 0.4))
+                            .foregroundColor(!useAutoDA && manualDA == da ? cyan : Color(white: 0.4))
                     }
                 }
+            }
+            
+            // METAR info display
+            if useAutoDA, let metar = metarService.metar {
+                VStack(spacing: 4) {
+                    Text(metar.stationId)
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white)
+                    
+                    HStack(spacing: 12) {
+                        Text("\(Int(round(metar.tempC)))°C")
+                        Text("\(String(format: "%.2f", metar.altimeterInHg))\"")
+                        Text("\(Int(round(metar.elevation)))ft elev")
+                    }
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color(white: 0.4))
+                    
+                    Text(metar.raw)
+                        .font(.system(size: 9, weight: .regular, design: .monospaced))
+                        .foregroundColor(Color(white: 0.25))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, 4)
             }
         }
         .padding(16)
@@ -170,73 +182,62 @@ struct PerfView: View {
         .background(panelColor.cornerRadius(12))
     }
     
-    // MARK: - Weight Inputs
+    private var metarButton: some View {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                useAutoDA = true
+                manualDA = nil
+            }
+            metarService.requestLocation()
+        }) {
+            HStack(spacing: 8) {
+                if metarService.isLoading {
+                    ProgressView()
+                        .tint(cyan)
+                        .scaleEffect(0.8)
+                } else {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 14))
+                }
+                
+                if let da = metarService.densityAltitude, useAutoDA {
+                    Text("DA \(da) ft")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                } else if let error = metarService.errorMessage {
+                    Text(error)
+                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                } else {
+                    Text("FETCH METAR")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(useAutoDA ? cyan.opacity(0.25) : Color(white: 0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(useAutoDA ? cyan : Color(white: 0.15), lineWidth: useAutoDA ? 2 : 1)
+            )
+            .foregroundColor(useAutoDA ? cyan : Color(white: 0.4))
+        }
+    }
     
-    private var weightInputsPanel: some View {
+    // MARK: - Weight Panel
+    
+    private var weightPanel: some View {
         VStack(spacing: 20) {
             Text("WEIGHT")
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .tracking(3)
                 .foregroundColor(cyan.opacity(0.6))
             
-            fuelSlider
-            buttonRow(label: "PAX", value: $paxWeight, options: paxOptions, color: cyan)
-            buttonRow(label: "BAGGAGE", value: $baggage, options: baggageOptions, color: cyan)
+            WeightInputControls(weight: weight, cyan: cyan)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
         .background(panelColor.cornerRadius(12))
-    }
-    
-    private var fuelSlider: some View {
-        VStack(spacing: 6) {
-            HStack {
-                Text("FUEL")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(cyan)
-                
-                Spacer()
-                
-                Text("\(String(format: "%.1f", fuelGallons)) gal  (\(Int(fuelLbs)) lbs)")
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.white)
-            }
-            
-            Slider(value: $fuelGallons, in: 0...fuelCapacity)
-                .tint(cyan)
-        }
-    }
-    
-    private func buttonRow(label: String, value: Binding<Double>, options: [Double], color: Color) -> some View {
-        VStack(spacing: 8) {
-            Text(label)
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(color)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: 8) {
-                ForEach(options, id: \.self) { option in
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            value.wrappedValue = value.wrappedValue == option ? 0 : option
-                        }
-                    }) {
-                        Text("\(Int(option))")
-                            .font(.system(size: 16, weight: .bold, design: .monospaced))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(value.wrappedValue == option ? color.opacity(0.25) : Color(white: 0.06))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(value.wrappedValue == option ? color : Color(white: 0.15), lineWidth: value.wrappedValue == option ? 2 : 1)
-                            )
-                            .foregroundColor(value.wrappedValue == option ? color : Color(white: 0.4))
-                    }
-                }
-            }
-        }
     }
 }

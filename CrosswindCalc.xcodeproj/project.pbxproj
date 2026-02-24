@@ -16,6 +16,7 @@
 		A100000B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001B /* OnboardingView.swift */; };
 		CD5150622F4E4A4900ADDD8B /* VSpeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */; };
 		CD5150632F4E4A4900ADDD8B /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */; };
+		CD5150652F4E528100ADDD8B /* PerfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150642F4E528100ADDD8B /* PerfView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		A100001B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 		CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VSpeedView.swift; sourceTree = "<group>"; };
+		CD5150642F4E528100ADDD8B /* PerfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 		A1000031 /* CrosswindCalc */ = {
 			isa = PBXGroup;
 			children = (
+				CD5150642F4E528100ADDD8B /* PerfView.swift */,
 				CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */,
 				CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */,
 				A1000011 /* CrosswindCalcApp.swift */,
@@ -145,6 +148,7 @@
 			files = (
 				A1000001 /* CrosswindCalcApp.swift in Sources */,
 				A1000003 /* CrosswindReadout.swift in Sources */,
+				CD5150652F4E528100ADDD8B /* PerfView.swift in Sources */,
 				A1000006 /* RotaryView.swift in Sources */,
 				A1000007 /* RotaryKnob.swift in Sources */,
 				CD5150622F4E4A4900ADDD8B /* VSpeedView.swift in Sources */,

@@ -1,60 +1,30 @@
 import SwiftUI
 
 struct VSpeedView: View {
-    // MARK: - Aircraft constants (RV-7)
-    private let emptyWeight: Double = 1096
-    private let pilotWeight: Double = 178
-    private let maxGross: Double = 1800
-    private let fuelCapacity: Double = 42    // gallons
-    private let fuelWeight: Double = 6.0     // lbs per gallon
-    private let paxOptions: [Double] = [100, 130, 160, 200]
-    private let baggageOptions: [Double] = [25, 50, 75, 100]
+    @EnvironmentObject var weight: SharedWeight
     
     // MGW reference speeds (KIAS at 1800 lbs)
     private let vaAtMGW: Double = 123
-    private let vs1AtMGW: Double = 55    // clean stall
-    private let vsoAtMGW: Double = 51    // dirty stall
-    private let bestGlideAtMGW: Double = 97   // best glide
-    private let vfeFullAtMGW: Double = 96   // max flap extended
-    private let vfePartialAtMGW: Double = 86 // partial flap
-    
-    // MARK: - State
-    @AppStorage("vspeed_fuel") private var fuelGallons: Double = 42
-    @AppStorage("vspeed_baggage") private var baggage: Double = 0
-    @AppStorage("vspeed_pax") private var paxWeight: Double = 0
+    private let vs1AtMGW: Double = 55
+    private let vsoAtMGW: Double = 51
+    private let bestGlideAtMGW: Double = 97
+    private let vfeFullAtMGW: Double = 96
+    private let vfePartialAtMGW: Double = 86
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
     
-    // MARK: - Calculations
-    
-    private var fuelLbs: Double { fuelGallons * fuelWeight }
-    
-    private var currentWeight: Double {
-        emptyWeight + pilotWeight + fuelLbs + paxWeight + baggage
-    }
-    
-    private var weightRatio: Double {
-        currentWeight / maxGross
-    }
-    
-    private var sqrtWeightRatio: Double {
-        sqrt(weightRatio)
-    }
-    
     // V-speeds scale with sqrt of weight ratio
-    private var va: Double { vaAtMGW * sqrtWeightRatio }
-    private var vs1: Double { vs1AtMGW * sqrtWeightRatio }
-    private var vso: Double { vsoAtMGW * sqrtWeightRatio }
-    private var bestGlide: Double { bestGlideAtMGW * sqrtWeightRatio }
-    private var vfeFull: Double { vfeFullAtMGW * sqrtWeightRatio }
-    private var vfePartial: Double { vfePartialAtMGW * sqrtWeightRatio }
-    
-    private var isOverGross: Bool { currentWeight > maxGross }
+    private var va: Double { vaAtMGW * weight.sqrtWeightRatio }
+    private var vs1: Double { vs1AtMGW * weight.sqrtWeightRatio }
+    private var vso: Double { vsoAtMGW * weight.sqrtWeightRatio }
+    private var bestGlide: Double { bestGlideAtMGW * weight.sqrtWeightRatio }
+    private var vfeFull: Double { vfeFullAtMGW * weight.sqrtWeightRatio }
+    private var vfePartial: Double { vfePartialAtMGW * weight.sqrtWeightRatio }
     
     private var weightColor: Color {
-        if isOverGross { return .red }
-        if currentWeight > maxGross * 0.95 { return .orange }
+        if weight.isOverGross { return .red }
+        if weight.currentWeight > weight.maxGross * 0.95 { return .orange }
         return .green
     }
     
@@ -72,7 +42,6 @@ struct VSpeedView: View {
                 weightHeader
                 speedsPanel
                 inputsPanel
-                densityAltitudeStub
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -91,16 +60,16 @@ struct VSpeedView: View {
                 .tracking(4)
                 .foregroundColor(weightColor.opacity(0.6))
             
-            Text("\(Int(currentWeight))")
+            Text("\(Int(weight.currentWeight))")
                 .font(.system(size: 72, weight: .heavy, design: .rounded))
                 .foregroundColor(weightColor)
             
-            Text("lbs  /  \(Int(maxGross)) MGW")
+            Text("lbs  /  \(Int(weight.maxGross)) MGW")
                 .font(.system(size: 14, weight: .medium, design: .monospaced))
                 .foregroundColor(Color(white: 0.4))
             
-            if isOverGross {
-                Text("⚠ OVER GROSS BY \(Int(currentWeight - maxGross)) LBS")
+            if weight.isOverGross {
+                Text("OVER GROSS BY \(Int(weight.currentWeight - weight.maxGross)) LBS")
                     .font(.system(size: 14, weight: .heavy, design: .monospaced))
                     .foregroundColor(.red)
                     .padding(.top, 4)
@@ -189,79 +158,7 @@ struct VSpeedView: View {
                 .tracking(3)
                 .foregroundColor(cyan.opacity(0.6))
             
-            fuelSlider
-            buttonRow(label: "PAX", value: $paxWeight, options: paxOptions, unit: "lbs", color: cyan)
-            buttonRow(label: "BAGGAGE", value: $baggage, options: baggageOptions, unit: "lbs", color: cyan)
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .background(panelColor.cornerRadius(12))
-    }
-    
-    private var fuelSlider: some View {
-        VStack(spacing: 6) {
-            HStack {
-                Text("FUEL")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(cyan)
-                
-                Spacer()
-                
-                Text("\(String(format: "%.1f", fuelGallons)) gal  (\(Int(fuelLbs)) lbs)")
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.white)
-            }
-            
-            Slider(value: $fuelGallons, in: 0...fuelCapacity)
-                .tint(cyan)
-        }
-    }
-    
-    private func buttonRow(label: String, value: Binding<Double>, options: [Double], unit: String, color: Color) -> some View {
-        VStack(spacing: 8) {
-            Text(label)
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(color)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: 8) {
-                ForEach(options, id: \.self) { option in
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            value.wrappedValue = value.wrappedValue == option ? 0 : option
-                        }
-                    }) {
-                        Text("\(Int(option))")
-                            .font(.system(size: 16, weight: .bold, design: .monospaced))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(value.wrappedValue == option ? color.opacity(0.25) : Color(white: 0.06))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(value.wrappedValue == option ? color : Color(white: 0.15), lineWidth: value.wrappedValue == option ? 2 : 1)
-                            )
-                            .foregroundColor(value.wrappedValue == option ? color : Color(white: 0.4))
-                    }
-                }
-            }
-        }
-    }
-    
-    // MARK: - DA Stub
-    
-    private var densityAltitudeStub: some View {
-        VStack(spacing: 8) {
-            Text("DENSITY ALTITUDE & PERFORMANCE")
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .tracking(2)
-                .foregroundColor(Color(white: 0.3))
-            
-            Text("Coming soon — weather & location services")
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundColor(Color(white: 0.2))
+            WeightInputControls(weight: weight, cyan: cyan)
         }
         .padding(16)
         .frame(maxWidth: .infinity)

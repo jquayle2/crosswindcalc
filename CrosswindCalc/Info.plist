@@ -8,5 +8,7 @@
 	<string>Crosswind Calculator</string>
 	<key>CFBundleSpokenName</key>
 	<string>Crosswind Calculator</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Used to find the nearest weather station for density altitude calculation.</string>
 </dict>
 </plist>
