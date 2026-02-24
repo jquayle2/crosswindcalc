@@ -20,7 +20,6 @@ struct RotaryKnob: View {
     @State private var lastAngle: CGFloat? = nil
     @State private var accumulatedAngle: CGFloat = 0
     @State private var isDragging: Bool = false
-    @Environment(\.appTheme) private var theme
     
     private var isActive: Bool { activeKnob == knobID }
     
@@ -198,7 +197,7 @@ struct RotaryKnob: View {
     private func knobBody(size: CGFloat) -> some View {
         ZStack {
             Circle()
-                .fill(theme.knobShadow)
+                .fill(Color.black.opacity(0.4))
                 .frame(width: size, height: size)
                 .blur(radius: 6)
                 .offset(y: 3)
@@ -206,7 +205,12 @@ struct RotaryKnob: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: theme.knobGradientColors,
+                        colors: [
+                            Color(white: 0.22),
+                            Color(white: 0.15),
+                            Color(white: 0.10),
+                            Color(white: 0.13)
+                        ],
                         center: .init(x: 0.4, y: 0.35),
                         startRadius: 0,
                         endRadius: size / 2
@@ -217,7 +221,7 @@ struct RotaryKnob: View {
                     Circle()
                         .strokeBorder(
                             LinearGradient(
-                                colors: [theme.knobStrokeTop, theme.knobStrokeBottom],
+                                colors: [Color(white: 0.32), Color(white: 0.06)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -237,9 +241,6 @@ struct RotaryKnob: View {
                     ? (.pi / CGFloat(majorCount))
                     : CGFloat(0)
                 
-                let majorOpacity = theme.tickOpacity
-                let minorOpacity = theme.minorTickOpacity
-                
                 func drawTick(angle: CGFloat, length: CGFloat, opacity: Double, width: CGFloat) {
                     let inner = r - length
                     var path = Path()
@@ -253,7 +254,7 @@ struct RotaryKnob: View {
                         ? CGFloat(i) / CGFloat(majorCount)
                         : CGFloat(i) / CGFloat(max(1, majorCount - 1))
                     let a = fraction * .pi * 2 - .pi / 2 + wrapsOffset + halfTickOffset
-                    drawTick(angle: a, length: 8, opacity: majorOpacity, width: 1)
+                    drawTick(angle: a, length: 8, opacity: 0.18, width: 1)
                 }
                 
                 if let minorCount = minorTickDivisions {
@@ -262,7 +263,7 @@ struct RotaryKnob: View {
                             ? CGFloat(i) / CGFloat(minorCount)
                             : CGFloat(i) / CGFloat(max(1, minorCount - 1))
                         let a = fraction * .pi * 2 - .pi / 2 + wrapsOffset + halfTickOffset
-                        drawTick(angle: a, length: 4, opacity: minorOpacity, width: 0.5)
+                        drawTick(angle: a, length: 4, opacity: 0.1, width: 0.5)
                     }
                 }
             }
@@ -277,14 +278,14 @@ struct RotaryKnob: View {
         let innerSize = size * 0.48
         return ZStack {
             Circle()
-                .fill(theme.knobFaceBackground)
+                .fill(Color.black)
                 .frame(width: innerSize, height: innerSize)
                 .shadow(color: .black.opacity(0.6), radius: 4, y: 2)
             
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [theme.knobFaceSheen, Color.clear],
+                        colors: [Color.white.opacity(0.04), Color.clear],
                         startPoint: .top,
                         endPoint: .center
                     )
@@ -295,7 +296,7 @@ struct RotaryKnob: View {
                 Text(displayFormat(value))
                     .font(.system(size: innerSize * 0.35,
                                   weight: .heavy, design: .monospaced))
-                    .foregroundColor(theme.knobCenterValueColor)
+                    .foregroundColor(.white)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
                 

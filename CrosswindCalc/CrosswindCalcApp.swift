@@ -5,7 +5,7 @@ struct CrosswindCalcApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
-                .withAppTheme()
+                .preferredColorScheme(.dark)
         }
     }
 }
@@ -14,12 +14,10 @@ struct MainTabView: View {
     @AppStorage("lastTab") private var selectedTab: Int = 0
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
     @State private var showOnboarding: Bool = false
-    @Environment(\.appTheme) private var theme
-    private let pageCount = 3
     
     var body: some View {
         ZStack {
-            theme.mainBackground
+            Color(red: 0.04, green: 0.05, blue: 0.09)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -30,15 +28,15 @@ struct MainTabView: View {
                     } else if selectedTab == 1 {
                         KeypadView()
                             .transition(.opacity)
-                    } else {
-                        FeedbackView(showOnboarding: $showOnboarding)
+                    } else if selectedTab == 2 {
+                        VSpeedView()
                             .transition(.opacity)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .animation(.easeInOut(duration: 0.2), value: selectedTab)
                 
-                pageNavigationBar
+                tabBar
             }
         }
         .onAppear {
@@ -48,53 +46,34 @@ struct MainTabView: View {
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView(isPresented: $showOnboarding)
-                .withAppTheme()
         }
     }
     
-    private var pageNavigationBar: some View {
-        HStack {
-            Button(action: {
-                if selectedTab > 0 {
-                    selectedTab -= 1
-                }
-            }) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(selectedTab > 0 ? theme.primaryText : theme.navArrowDisabled)
-                    .frame(width: 44, height: 44)
+    private var tabBar: some View {
+        HStack(spacing: 0) {
+            tabButton(icon: "dial.medium.fill", label: "Dials", index: 0)
+            tabButton(icon: "number.square.fill", label: "Keypad", index: 1)
+            if FeatureFlags.showVSpeedPage {
+                tabButton(icon: "gauge.with.needle.fill", label: "V-Speed", index: 2)
             }
-            .disabled(selectedTab == 0)
-            
-            Spacer()
-            
-            HStack(spacing: 8) {
-                ForEach(0..<pageCount, id: \.self) { index in
-                    Circle()
-                        .fill(index == selectedTab ? theme.primaryText : theme.inactiveDot)
-                        .frame(width: index == selectedTab ? 8 : 6,
-                               height: index == selectedTab ? 8 : 6)
-                        .onTapGesture { selectedTab = index }
-                        .animation(.easeInOut(duration: 0.2), value: selectedTab)
-                }
-            }
-            
-            Spacer()
-            
-            Button(action: {
-                if selectedTab < pageCount - 1 {
-                    selectedTab += 1
-                }
-            }) {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(selectedTab < pageCount - 1 ? theme.primaryText : theme.navArrowDisabled)
-                    .frame(width: 44, height: 44)
-            }
-            .disabled(selectedTab >= pageCount - 1)
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 40)
         .padding(.vertical, 8)
-        .background(theme.mainBackground)
+        .background(Color(red: 0.04, green: 0.05, blue: 0.09))
+    }
+    
+    private func tabButton(icon: String, label: String, index: Int) -> some View {
+        let isSelected = selectedTab == index
+        return Button(action: { selectedTab = index }) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                Text(label)
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            }
+            .foregroundColor(isSelected ? Color(red: 0.94, green: 0.75, blue: 0.25) : Color(white: 0.3))
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+        }
     }
 }

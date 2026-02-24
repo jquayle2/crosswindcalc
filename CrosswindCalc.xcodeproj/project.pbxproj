@@ -15,6 +15,7 @@
 		A100000A /* KeypadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A /* KeypadView.swift */; };
 		A100000B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001B /* OnboardingView.swift */; };
 		A100000C /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C /* FeedbackView.swift */; };
+		CD514CE52F4D276300ADDD8B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD514CE42F4D276300ADDD8B /* Theme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		A100001A /* KeypadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeypadView.swift; sourceTree = "<group>"; };
 		A100001B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A100001C /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
+		CD514CE42F4D276300ADDD8B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 		A1000031 /* CrosswindCalc */ = {
 			isa = PBXGroup;
 			children = (
+				CD514CE42F4D276300ADDD8B /* Theme.swift */,
 				A1000011 /* CrosswindCalcApp.swift */,
 				A1000013 /* CrosswindReadout.swift */,
 				A1000016 /* RotaryView.swift */,
@@ -141,6 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000001 /* CrosswindCalcApp.swift in Sources */,
+				CD514CE52F4D276300ADDD8B /* Theme.swift in Sources */,
 				A1000003 /* CrosswindReadout.swift in Sources */,
 				A1000006 /* RotaryView.swift in Sources */,
 				A1000007 /* RotaryKnob.swift in Sources */,

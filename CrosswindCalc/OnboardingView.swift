@@ -4,11 +4,10 @@ struct OnboardingView: View {
     @Binding var isPresented: Bool
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
     @State private var currentPage = 0
-    @Environment(\.appTheme) private var theme
     
     var body: some View {
         ZStack {
-            theme.mainBackground
+            Color(red: 0.04, green: 0.05, blue: 0.09)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -49,7 +48,7 @@ struct OnboardingView: View {
                     }) {
                         Text("Skip")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(theme.dimText)
+                            .foregroundColor(Color(white: 0.4))
                     }
                     .padding(.top, 12)
                 } else {
@@ -65,7 +64,7 @@ struct OnboardingView: View {
         HStack(spacing: 8) {
             ForEach(0..<2) { i in
                 Circle()
-                    .fill(i == currentPage ? Color(red: 0.94, green: 0.75, blue: 0.25) : theme.inactiveDot)
+                    .fill(i == currentPage ? Color(red: 0.94, green: 0.75, blue: 0.25) : Color(white: 0.25))
                     .frame(width: i == currentPage ? 10 : 8, height: i == currentPage ? 10 : 8)
             }
         }
@@ -83,7 +82,7 @@ struct OnboardingView: View {
             Text("ROTARY DIALS")
                 .font(.system(size: 28, weight: .heavy, design: .monospaced))
                 .tracking(3)
-                .foregroundColor(theme.primaryText)
+                .foregroundColor(.white)
             
             VStack(alignment: .leading, spacing: 16) {
                 featureRow(
@@ -127,7 +126,7 @@ struct OnboardingView: View {
             Text("KEYPAD ENTRY")
                 .font(.system(size: 28, weight: .heavy, design: .monospaced))
                 .tracking(3)
-                .foregroundColor(theme.primaryText)
+                .foregroundColor(.white)
             
             VStack(alignment: .leading, spacing: 16) {
                 featureRow(
@@ -156,7 +155,7 @@ struct OnboardingView: View {
             
             Text("Swipe to page 2 anytime to use keypad entry")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(theme.tertiaryText)
+                .foregroundColor(Color(white: 0.35))
                 .multilineTextAlignment(.center)
                 .padding(.top, 8)
             
@@ -175,10 +174,10 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(theme.primaryText)
+                    .foregroundColor(.white)
                 Text(detail)
                     .font(.system(size: 15, weight: .regular))
-                    .foregroundColor(theme.secondaryText)
+                    .foregroundColor(Color(white: 0.5))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

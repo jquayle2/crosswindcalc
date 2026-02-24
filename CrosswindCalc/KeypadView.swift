@@ -47,7 +47,6 @@ struct KeypadView: View {
     @State private var dragStartDigit: String? = nil
     @State private var dragCurrentDigit: String? = nil
     @State private var digitFrames: [String: CGRect] = [:]
-    @Environment(\.appTheme) private var theme
     
     private var windDeg: Int { windDirection % 360 }
     
@@ -105,7 +104,7 @@ struct KeypadView: View {
             keypadSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(theme.mainBackground)
+        .background(Color(red: 0.04, green: 0.05, blue: 0.09))
         .animation(.easeInOut(duration: 0.2), value: activeField)
     }
     
@@ -147,12 +146,12 @@ struct KeypadView: View {
                 if isActive {
                     Text(inputBuffer.isEmpty ? "_ _" : inputBuffer)
                         .font(.system(size: 28, weight: .heavy, design: .rounded))
-                        .foregroundColor(inputBuffer.isEmpty ? field.color.opacity(0.3) : theme.primaryText)
+                        .foregroundColor(inputBuffer.isEmpty ? field.color.opacity(0.3) : .white)
                         .offset(x: shakeOffset)
                 } else {
                     Text(displayValue)
                         .font(.system(size: 28, weight: .heavy, design: .rounded))
-                        .foregroundColor(theme.primaryText)
+                        .foregroundColor(.white)
                 }
                 
                 if isActive, let error = errorMessage {
@@ -165,10 +164,10 @@ struct KeypadView: View {
             .frame(height: 70)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isActive ? theme.activeBoxBackground : theme.boxBackground)
+                    .fill(Color(white: isActive ? 0.1 : 0.06))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(isActive ? field.color : theme.border, lineWidth: isActive ? 2 : 1)
+                            .stroke(isActive ? field.color : Color(white: 0.12), lineWidth: isActive ? 2 : 1)
                     )
             )
         }
@@ -254,7 +253,7 @@ struct KeypadView: View {
             .padding(.bottom, 16)
         }
         .frame(maxHeight: .infinity)
-        .background(theme.keypadBackground)
+        .background(Color(red: 0.06, green: 0.07, blue: 0.11))
     }
     
     private func dragDigitCell(digit: String, coordSpace: String) -> some View {
@@ -264,21 +263,21 @@ struct KeypadView: View {
         
         return Text(digit)
             .font(.system(size: 32, weight: .bold, design: .rounded))
-            .foregroundColor(!enabled ? theme.disabledText :
-                            isStart ? (activeField?.color ?? theme.primaryText) :
-                            isCurrent ? (activeField?.color ?? theme.primaryText) :
-                            theme.primaryText)
+            .foregroundColor(!enabled ? Color(white: 0.2) :
+                            isStart ? (activeField?.color ?? .white) :
+                            isCurrent ? (activeField?.color ?? .white) :
+                            .white)
             .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
             .background(
                 GeometryReader { geo in
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(!enabled ? theme.digitDisabledBackground :
-                              isStart ? (activeField?.color ?? theme.primaryText).opacity(0.25) :
-                              isCurrent ? (activeField?.color ?? theme.primaryText).opacity(0.15) :
-                              theme.digitButtonBackground)
+                        .fill(!enabled ? Color(white: 0.06) :
+                              isStart ? (activeField?.color ?? .white).opacity(0.25) :
+                              isCurrent ? (activeField?.color ?? .white).opacity(0.15) :
+                              Color(white: 0.12))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(isStart || isCurrent ? (activeField?.color ?? theme.primaryText).opacity(0.6) : Color.clear, lineWidth: 2)
+                                .stroke(isStart || isCurrent ? (activeField?.color ?? .white).opacity(0.6) : Color.clear, lineWidth: 2)
                         )
                         .onAppear {
                             DispatchQueue.main.async {
@@ -308,11 +307,11 @@ struct KeypadView: View {
         Button(action: { backspacePressed() }) {
             Image(systemName: "delete.left.fill")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(inputBuffer.isEmpty ? theme.disabledText : theme.primaryText)
+                .foregroundColor(inputBuffer.isEmpty ? Color(white: 0.25) : .white)
                 .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(theme.actionButtonBackground)
+                        .fill(Color(white: 0.08))
                 )
         }
         .disabled(inputBuffer.isEmpty)
@@ -335,11 +334,11 @@ struct KeypadView: View {
             Text(hasInput ? "OK" : (isGustField ? "NONE" : "OK"))
                 .font(.system(size: 18, weight: .heavy, design: .monospaced))
                 .tracking(1)
-                .foregroundColor(hasInput ? theme.okButtonText : theme.enterInactiveText)
+                .foregroundColor(hasInput ? .black : Color(white: 0.5))
                 .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(hasInput ? (activeField?.color ?? theme.primaryText) : theme.actionButtonBackground)
+                        .fill(hasInput ? (activeField?.color ?? .white) : Color(white: 0.08))
                 )
         }
     }
