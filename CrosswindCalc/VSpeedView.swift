@@ -12,12 +12,13 @@ struct VSpeedView: View {
     private let maxBaggage: Double = 100
     private let baggageCaution: Double = 70
     
-    // MGW reference speeds (CAS)
-    private let vaAtMGW: Double = 116
-    private let vs1AtMGW: Double = 999  // TODO: placeholder
-    private let vsoAtMGW: Double = 999  // TODO: placeholder
+    // MGW reference speeds (KIAS at 1800 lbs)
+    private let vaAtMGW: Double = 123
+    private let vs1AtMGW: Double = 55    // clean stall
+    private let vsoAtMGW: Double = 51    // dirty stall
     private let bestGlideAtMGW: Double = 999  // TODO: placeholder
-    private let vfeAtMGW: Double = 999  // TODO: placeholder
+    private let vfeFullAtMGW: Double = 96   // max flap extended
+    private let vfePartialAtMGW: Double = 86 // partial flap
     
     // MARK: - State
     @AppStorage("vspeed_fuel") private var fuelGallons: Double = 42
@@ -50,7 +51,8 @@ struct VSpeedView: View {
     private var vs1: Double { vs1AtMGW * sqrtWeightRatio }
     private var vso: Double { vsoAtMGW * sqrtWeightRatio }
     private var bestGlide: Double { bestGlideAtMGW * sqrtWeightRatio }
-    private var vfe: Double { vfeAtMGW * sqrtWeightRatio }
+    private var vfeFull: Double { vfeFullAtMGW * sqrtWeightRatio }
+    private var vfePartial: Double { vfePartialAtMGW * sqrtWeightRatio }
     
     private var isOverGross: Bool { currentWeight > maxGross }
     
@@ -122,11 +124,11 @@ struct VSpeedView: View {
                 .tracking(3)
                 .foregroundColor(amber.opacity(0.6))
             
-            speedRow(label: "Va", value: va, unit: "KCAS", highlight: true)
-            speedRow(label: "Vs1", value: vs1, unit: "KCAS")
-            speedRow(label: "Vso", value: vso, unit: "KCAS")
-            speedRow(label: "Vfe", value: vfe, unit: "KCAS")
-            speedRow(label: "GLIDE", value: bestGlide, unit: "KCAS")
+            speedRow(label: "Va", value: va, unit: "KIAS", highlight: true)
+            speedRow(label: "Vs1", value: vs1, unit: "KIAS")
+            speedRow(label: "Vso", value: vso, unit: "KIAS")
+            vfeRow()
+            speedRow(label: "GLIDE", value: bestGlide, unit: "KIAS")
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -152,6 +154,34 @@ struct VSpeedView: View {
                 .frame(width: 40, alignment: .leading)
         }
         .padding(.vertical, highlight ? 4 : 0)
+    }
+    
+    private func vfeRow() -> some View {
+        HStack {
+            Text("Vfe")
+                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                .foregroundColor(Color(white: 0.5))
+                .frame(width: 60, alignment: .leading)
+            
+            Spacer()
+            
+            HStack(spacing: 4) {
+                Text("\(Int(round(vfePartial)))")
+                    .font(.system(size: 28, weight: .heavy, design: .rounded))
+                    .foregroundColor(.white)
+                Text("/")
+                    .font(.system(size: 20, weight: .medium, design: .rounded))
+                    .foregroundColor(Color(white: 0.3))
+                Text("\(Int(round(vfeFull)))")
+                    .font(.system(size: 28, weight: .heavy, design: .rounded))
+                    .foregroundColor(.white)
+            }
+            
+            Text("KIAS")
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .foregroundColor(Color(white: 0.3))
+                .frame(width: 40, alignment: .leading)
+        }
     }
     
     // MARK: - Inputs Panel
