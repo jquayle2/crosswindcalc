@@ -18,8 +18,6 @@
 		CD5150632F4E4A4900ADDD8B /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */; };
 		CD5150652F4E528100ADDD8B /* PerfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150642F4E528100ADDD8B /* PerfView.swift */; };
 		CD5150672F4E569000ADDD8B /* SharedWeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150662F4E569000ADDD8B /* SharedWeight.swift */; };
-		CD51506A2F4E597500ADDD8B /* MetarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150682F4E597500ADDD8B /* MetarService.swift */; };
-		CD51506B2F4E597500ADDD8B /* WeightInputControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150692F4E597500ADDD8B /* WeightInputControls.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,8 +33,6 @@
 		CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VSpeedView.swift; sourceTree = "<group>"; };
 		CD5150642F4E528100ADDD8B /* PerfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfView.swift; sourceTree = "<group>"; };
 		CD5150662F4E569000ADDD8B /* SharedWeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWeight.swift; sourceTree = "<group>"; };
-		CD5150682F4E597500ADDD8B /* MetarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetarService.swift; sourceTree = "<group>"; };
-		CD5150692F4E597500ADDD8B /* WeightInputControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightInputControls.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,8 +57,6 @@
 		A1000031 /* CrosswindCalc */ = {
 			isa = PBXGroup;
 			children = (
-				CD5150682F4E597500ADDD8B /* MetarService.swift */,
-				CD5150692F4E597500ADDD8B /* WeightInputControls.swift */,
 				CD5150662F4E569000ADDD8B /* SharedWeight.swift */,
 				CD5150642F4E528100ADDD8B /* PerfView.swift */,
 				CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */,
@@ -157,8 +151,6 @@
 			files = (
 				A1000001 /* CrosswindCalcApp.swift in Sources */,
 				A1000003 /* CrosswindReadout.swift in Sources */,
-				CD51506A2F4E597500ADDD8B /* MetarService.swift in Sources */,
-				CD51506B2F4E597500ADDD8B /* WeightInputControls.swift in Sources */,
 				CD5150652F4E528100ADDD8B /* PerfView.swift in Sources */,
 				A1000006 /* RotaryView.swift in Sources */,
 				CD5150672F4E569000ADDD8B /* SharedWeight.swift in Sources */,
