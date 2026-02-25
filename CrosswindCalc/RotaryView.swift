@@ -92,23 +92,25 @@ struct RotaryView: View {
                 windSpeed: windSpeed,
                 gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
             )
-            .opacity(activeKnob == nil ? 1 : 0)
+            .opacity(isIPad || activeKnob == nil ? 1 : 0)
             
-            VStack(spacing: 6) {
-                Text(activeDisplayLabel)
-                    .font(.system(size: isIPad ? 16 : 12, weight: .bold, design: .monospaced))
-                    .tracking(4)
-                    .foregroundColor(activeColor.opacity(0.6))
-                
-                Text(activeDisplayText)
-                    .font(.system(size: isIPad ? 120 : 96, weight: .heavy, design: .rounded))
-                    .foregroundColor(activeColor)
-                    .minimumScaleFactor(0.7)
-                    .lineLimit(1)
+            if !isIPad {
+                VStack(spacing: 6) {
+                    Text(activeDisplayLabel)
+                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .tracking(4)
+                        .foregroundColor(activeColor.opacity(0.6))
+                    
+                    Text(activeDisplayText)
+                        .font(.system(size: 96, weight: .heavy, design: .rounded))
+                        .foregroundColor(activeColor)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                }
+                .padding(.vertical, 20)
+                .frame(maxWidth: .infinity)
+                .opacity(activeKnob != nil ? 1 : 0)
             }
-            .padding(.vertical, 20)
-            .frame(maxWidth: .infinity)
-            .opacity(activeKnob != nil ? 1 : 0)
         }
         .frame(height: isIPad ? 400 : 280)
         .clipped()
