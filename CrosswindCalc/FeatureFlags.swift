@@ -1,5 +1,5 @@
 import Foundation
 
 struct FeatureFlags {
-    static let showVSpeedPage = true
+    static let showVSpeedPage = false
 }
