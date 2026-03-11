@@ -40,7 +40,9 @@ struct CrosswindCalcApp: App {
             gustSpeed = 0
         }
         
-        selectedTab = 1
+        if selectedTab > 1 {
+            selectedTab = 0
+        }
     }
 }
 
