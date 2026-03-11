@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct CrosswindCalcApp: App {
     @StateObject private var sharedWeight = SharedWeight()
+    @AppStorage("runway") private var runway: Int = 18
     @AppStorage("windDirection") private var windDirection: Int = 210
     @AppStorage("windSpeed") private var windSpeed: Int = 15
     @AppStorage("gustSpeed") private var gustSpeed: Int = 15
@@ -28,6 +29,9 @@ struct CrosswindCalcApp: App {
             }
         )
         
+        if let rwy = params["runway"], let rwyVal = Int(rwy), rwyVal >= 1, rwyVal <= 36 {
+            runway = rwyVal
+        }
         if let dir = params["wind_dir"], let dirVal = Int(dir) {
             windDirection = dirVal
         }
