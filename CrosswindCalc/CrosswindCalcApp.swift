@@ -21,6 +21,7 @@ struct CrosswindCalcApp: App {
     }
     
     private func handleIncomingURL(_ url: URL) {
+        print("XW Calc received URL: \(url.absoluteString)")
         guard url.scheme == "xwcalc" else { return }
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return }
         let params = Dictionary(uniqueKeysWithValues:
@@ -31,6 +32,7 @@ struct CrosswindCalcApp: App {
         
         if let rwy = params["runway"], let rwyVal = Int(rwy), rwyVal >= 1, rwyVal <= 36 {
             runway = rwyVal
+            print("XW Calc: set runway = \(rwyVal)")
         }
         if let dir = params["wind_dir"], let dirVal = Int(dir) {
             windDirection = dirVal
