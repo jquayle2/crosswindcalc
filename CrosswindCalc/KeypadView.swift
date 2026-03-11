@@ -68,8 +68,8 @@ struct KeypadView: View {
     
     private var side: String {
         let diff = ((windDeg - runway * 10) % 360 + 360) % 360
-        if diff > 0 && diff < 180 { return "L" }
-        if diff > 180 { return "R" }
+        if diff > 0 && diff < 180 { return "R" }
+        if diff > 180 { return "L" }
         return ""
     }
     
