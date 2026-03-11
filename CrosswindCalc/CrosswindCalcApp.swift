@@ -34,10 +34,10 @@ struct CrosswindCalcApp: App {
         if let spd = params["wind_speed"], let spdVal = Int(spd) {
             windSpeed = spdVal
         }
-        if let gust = params["gust"], let gustVal = Int(gust) {
+        if let gust = params["gust"], let gustVal = Int(gust), gustVal > 0 {
             gustSpeed = gustVal
         } else {
-            gustSpeed = windSpeed
+            gustSpeed = 0
         }
         
         selectedTab = 1
