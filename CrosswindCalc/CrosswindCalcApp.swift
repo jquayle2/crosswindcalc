@@ -3,13 +3,44 @@ import SwiftUI
 @main
 struct CrosswindCalcApp: App {
     @StateObject private var sharedWeight = SharedWeight()
+    @AppStorage("windDirection") private var windDirection: Int = 210
+    @AppStorage("windSpeed") private var windSpeed: Int = 15
+    @AppStorage("gustSpeed") private var gustSpeed: Int = 15
+    @AppStorage("lastTab") private var selectedTab: Int = 0
     
     var body: some Scene {
         WindowGroup {
             MainTabView()
                 .environmentObject(sharedWeight)
                 .preferredColorScheme(.dark)
+                .onOpenURL { url in
+                    handleIncomingURL(url)
+                }
         }
+    }
+    
+    private func handleIncomingURL(_ url: URL) {
+        guard url.scheme == "xwcalc" else { return }
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return }
+        let params = Dictionary(uniqueKeysWithValues:
+            (components.queryItems ?? []).compactMap { item in
+                item.value.map { (item.name, $0) }
+            }
+        )
+        
+        if let dir = params["wind_dir"], let dirVal = Int(dir) {
+            windDirection = dirVal
+        }
+        if let spd = params["wind_speed"], let spdVal = Int(spd) {
+            windSpeed = spdVal
+        }
+        if let gust = params["gust"], let gustVal = Int(gust) {
+            gustSpeed = gustVal
+        } else {
+            gustSpeed = windSpeed
+        }
+        
+        selectedTab = 1
     }
 }
 

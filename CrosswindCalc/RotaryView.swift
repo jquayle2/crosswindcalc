@@ -90,7 +90,12 @@ struct RotaryView: View {
                 runway: runway,
                 windDirection: windDirection,
                 windSpeed: windSpeed,
-                gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
+                gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil,
+                onFlipRunway: {
+                    let opposite = (runway + 18) > 36 ? runway + 18 - 36 : runway + 18
+                    runway = opposite
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                }
             )
             .opacity(activeKnob == nil ? 1 : 0)
             

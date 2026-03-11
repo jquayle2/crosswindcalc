@@ -10,6 +10,7 @@ struct CrosswindReadout: View {
     let windDirection: Int
     let windSpeed: Int
     let gustSpeed: Int?
+    var onFlipRunway: (() -> Void)? = nil
     
     private var gustAddKts: Int? {
         guard let gust = gustSpeed, gust > windSpeed else { return nil }
@@ -19,10 +20,17 @@ struct CrosswindReadout: View {
     
     var body: some View {
         VStack(spacing: 6) {
-            Text("CROSSWIND")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .tracking(4)
-                .foregroundColor(Color(white: 0.4))
+            HStack(spacing: 6) {
+                Text("CROSSWIND")
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .tracking(4)
+                    .foregroundColor(Color(white: 0.4))
+                if onFlipRunway != nil {
+                    Image(systemName: "arrow.left.arrow.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(Color(white: 0.25))
+                }
+            }
             
             // Main crosswind number with arrows
             HStack(spacing: 6) {
@@ -131,5 +139,9 @@ struct CrosswindReadout: View {
                         .stroke(color.opacity(0.15), lineWidth: 1)
                 )
         )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onFlipRunway?()
+        }
     }
 }

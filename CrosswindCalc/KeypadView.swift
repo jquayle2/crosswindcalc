@@ -40,7 +40,7 @@ struct KeypadView: View {
     @AppStorage("windSpeed") private var windSpeed: Int = 15
     @AppStorage("gustSpeed") private var gustSpeed: Int = 15
     
-    @State private var activeField: KeypadField? = nil
+    @State private var activeField: KeypadField? = .runway
     @State private var inputBuffer: String = ""
     @State private var errorMessage: String? = nil
     @State private var shakeOffset: CGFloat = 0
@@ -92,7 +92,12 @@ struct KeypadView: View {
                     runway: runway,
                     windDirection: windDirection,
                     windSpeed: windSpeed,
-                    gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil
+                    gustSpeed: gustSpeed > windSpeed ? gustSpeed : nil,
+                    onFlipRunway: {
+                        let opposite = (runway + 18) > 36 ? runway + 18 - 36 : runway + 18
+                        runway = opposite
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    }
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -284,8 +289,8 @@ struct KeypadView: View {
                                 digitFrames[digit] = geo.frame(in: .named(coordSpace))
                             }
                         }
-                        .onChange(of: geo.frame(in: .named(coordSpace))) { newFrame in
-                            digitFrames[digit] = newFrame
+                        .onChange(of: geo.frame(in: .named(coordSpace))) {
+                            digitFrames[digit] = geo.frame(in: .named(coordSpace))
                         }
                 }
             )
@@ -321,12 +326,14 @@ struct KeypadView: View {
         let field = activeField
         let isGustField = field == .gust
         let hasInput = !inputBuffer.isEmpty
+        let noneAvailable = isGustField && !hasInput
         
         return Button(action: {
             if hasInput {
                 validateAndApply()
             } else if isGustField {
                 gustSpeed = windSpeed
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 activeField = nil
                 inputBuffer = ""
             }
@@ -334,11 +341,11 @@ struct KeypadView: View {
             Text(hasInput ? "OK" : (isGustField ? "NONE" : "OK"))
                 .font(.system(size: 18, weight: .heavy, design: .monospaced))
                 .tracking(1)
-                .foregroundColor(hasInput ? .black : Color(white: 0.5))
+                .foregroundColor(hasInput ? .black : (noneAvailable ? .black : Color(white: 0.5)))
                 .frame(maxWidth: .infinity, minHeight: 52, maxHeight: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(hasInput ? (activeField?.color ?? .white) : Color(white: 0.08))
+                        .fill(hasInput ? (activeField?.color ?? .white) : (noneAvailable ? KeypadField.gust.color.opacity(0.7) : Color(white: 0.08)))
                 )
         }
     }
