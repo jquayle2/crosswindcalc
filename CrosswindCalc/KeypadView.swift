@@ -47,6 +47,7 @@ struct KeypadView: View {
     @State private var dragStartDigit: String? = nil
     @State private var dragCurrentDigit: String? = nil
     @State private var digitFrames: [String: CGRect] = [:]
+    @State private var swallowZeroUntil: Date? = nil
     
     private var windDeg: Int { windDirection % 360 }
     
@@ -378,6 +379,12 @@ struct KeypadView: View {
         guard let field = activeField else { return }
         errorMessage = nil
         
+        if digit == "0", let until = swallowZeroUntil, Date() < until {
+            swallowZeroUntil = nil
+            return
+        }
+        swallowZeroUntil = nil
+        
         guard inputBuffer.count < field.maxDigits else { return }
         guard isDigitEnabled(digit) else { return }
         
@@ -449,6 +456,7 @@ struct KeypadView: View {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         inputBuffer = ""
         errorMessage = nil
+        swallowZeroUntil = Date().addingTimeInterval(0.3)
         
         if let next = KeypadField(rawValue: field.rawValue + 1) {
             activeField = next
