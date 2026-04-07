@@ -149,9 +149,9 @@ struct KeypadView: View {
                     .foregroundColor(field.color.opacity(0.6))
                 
                 if isActive {
-                    Text(inputBuffer.isEmpty ? "_ _" : inputBuffer)
+                    Text(inputBuffer.isEmpty ? displayValue : inputBuffer)
                         .font(.system(size: 28, weight: .heavy, design: .rounded))
-                        .foregroundColor(inputBuffer.isEmpty ? field.color.opacity(0.3) : .white)
+                        .foregroundColor(inputBuffer.isEmpty ? Color.white.opacity(0.25) : .white)
                         .offset(x: shakeOffset)
                 } else {
                     Text(displayValue)
