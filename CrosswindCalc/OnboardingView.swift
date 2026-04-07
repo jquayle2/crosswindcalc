@@ -2,8 +2,9 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Binding var isPresented: Bool
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @AppStorage("hasSeenOnboarding_v2") private var hasSeenOnboarding: Bool = false
     @State private var currentPage = 0
+    @State private var animPhase: CGFloat = 0
     
     var body: some View {
         ZStack {
@@ -56,6 +57,12 @@ struct OnboardingView: View {
                 }
                 
                 Spacer().frame(height: 20)
+            }
+        }
+        .onAppear {
+            animPhase = 0
+            withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: false)) {
+                animPhase = 1
             }
         }
     }
@@ -118,9 +125,7 @@ struct OnboardingView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Image(systemName: "number.square.fill")
-                .font(.system(size: 72))
-                .foregroundColor(Color(red: 0.22, green: 0.74, blue: 0.97))
+            animatedKeypadDemo
                 .padding(.bottom, 8)
             
             Text("KEYPAD ENTRY")
@@ -164,8 +169,50 @@ struct OnboardingView: View {
         }
     }
     
-    private func featureRow(icon: String, color: Color, title: String, detail: String) -> some View {
-        HStack(alignment: .top, spacing: 14) {
+    private var animatedKeypadDemo: some View {
+        ZStack {
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    bigKey("1", highlight: false)
+                    bigKey("2", highlight: animPhase < 0.15 || animPhase > 0.85)
+                    bigKey("3", highlight: false)
+                }
+                HStack(spacing: 8) {
+                    bigKey("4", highlight: false)
+                    bigKey("5", highlight: animPhase > 0.55 && animPhase < 0.85)
+                    bigKey("6", highlight: false)
+                }
+            }
+            
+            Circle()
+                .fill(Color(red: 0.94, green: 0.75, blue: 0.25).opacity(0.6))
+                .frame(width: 32, height: 32)
+                .overlay(Circle().stroke(Color.white, lineWidth: 2.5))
+                .offset(
+                    x: -56 + (112 * animPhase),
+                    y: -28 + (56 * animPhase)
+                )
+                .opacity(animPhase < 0.95 ? 1 : 0)
+        }
+        .frame(width: 220, height: 150)
+    }
+    
+    private func bigKey(_ digit: String, highlight: Bool) -> some View {
+        Text(digit)
+            .font(.system(size: 26, weight: .bold, design: .rounded))
+            .foregroundColor(.white)
+            .frame(width: 60, height: 60)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(highlight ? Color(red: 0.22, green: 0.74, blue: 0.97).opacity(0.4) : Color(white: 0.12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(highlight ? Color(red: 0.22, green: 0.74, blue: 0.97) : Color.clear, lineWidth: 2)
+                    )
+            )
+    }
+    
+    private func featureRow(icon: String, color: Color, title: String, detail: String) -> some View {        HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(color)

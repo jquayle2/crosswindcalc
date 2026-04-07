@@ -54,12 +54,11 @@ struct CrosswindCalcApp: App {
 
 struct MainTabView: View {
     @AppStorage("lastTab") private var selectedTab: Int = 0
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @AppStorage("hasSeenOnboarding_v2") private var hasSeenOnboarding: Bool = false
     @AppStorage("launchCount") private var launchCount: Int = 0
     @AppStorage("hasSeenQuickTip") private var hasSeenQuickTip: Bool = false
     @State private var showOnboarding: Bool = false
     @State private var showQuickTip: Bool = false
-    @State private var showHelpMenu: Bool = false
     
     var body: some View {
         ZStack {
@@ -91,7 +90,7 @@ struct MainTabView: View {
             VStack {
                 HStack {
                     Spacer()
-                    Button(action: { showHelpMenu = true }) {
+                    Button(action: { showQuickTip = true }) {
                         Image(systemName: "questionmark.circle")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(Color(white: 0.45))
@@ -118,18 +117,9 @@ struct MainTabView: View {
         }
         .overlay {
             if showQuickTip {
-                QuickTipView(isPresented: $showQuickTip)
+                QuickTipView(isPresented: $showQuickTip, currentTab: selectedTab)
                     .transition(.opacity)
             }
-        }
-        .confirmationDialog("Help", isPresented: $showHelpMenu, titleVisibility: .hidden) {
-            Button("Show Tour") {
-                showOnboarding = true
-            }
-            Button("Quick Tip") {
-                showQuickTip = true
-            }
-            Button("Cancel", role: .cancel) { }
         }
     }
     
