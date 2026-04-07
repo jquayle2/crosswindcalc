@@ -55,7 +55,11 @@ struct CrosswindCalcApp: App {
 struct MainTabView: View {
     @AppStorage("lastTab") private var selectedTab: Int = 0
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @AppStorage("launchCount") private var launchCount: Int = 0
+    @AppStorage("hasSeenQuickTip") private var hasSeenQuickTip: Bool = false
     @State private var showOnboarding: Bool = false
+    @State private var showQuickTip: Bool = false
+    @State private var showHelpMenu: Bool = false
     
     var body: some View {
         ZStack {
@@ -83,14 +87,49 @@ struct MainTabView: View {
                 
                 tabBar
             }
+            
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: { showHelpMenu = true }) {
+                        Image(systemName: "questionmark.circle")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(Color(white: 0.45))
+                            .padding(10)
+                    }
+                }
+                Spacer()
+            }
+            .padding(.top, 4)
+            .padding(.trailing, 4)
         }
         .onAppear {
             if !hasSeenOnboarding {
                 showOnboarding = true
             }
+            launchCount += 1
+            if launchCount == 5 && !hasSeenQuickTip && hasSeenOnboarding {
+                showQuickTip = true
+                hasSeenQuickTip = true
+            }
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView(isPresented: $showOnboarding)
+        }
+        .overlay {
+            if showQuickTip {
+                QuickTipView(isPresented: $showQuickTip)
+                    .transition(.opacity)
+            }
+        }
+        .confirmationDialog("Help", isPresented: $showHelpMenu, titleVisibility: .hidden) {
+            Button("Show Tour") {
+                showOnboarding = true
+            }
+            Button("Quick Tip") {
+                showQuickTip = true
+            }
+            Button("Cancel", role: .cancel) { }
         }
     }
     

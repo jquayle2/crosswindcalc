@@ -14,6 +14,7 @@
 		A1000007 /* RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017 /* RotaryKnob.swift */; };
 		A100000A /* KeypadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A /* KeypadView.swift */; };
 		A100000B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001B /* OnboardingView.swift */; };
+		A100000C /* QuickTipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C /* QuickTipView.swift */; };
 		CD5150622F4E4A4900ADDD8B /* VSpeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */; };
 		CD5150632F4E4A4900ADDD8B /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */; };
 		CD5150652F4E528100ADDD8B /* PerfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5150642F4E528100ADDD8B /* PerfView.swift */; };
@@ -31,6 +32,7 @@
 		A1000017 /* RotaryKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotaryKnob.swift; sourceTree = "<group>"; };
 		A100001A /* KeypadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeypadView.swift; sourceTree = "<group>"; };
 		A100001B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		A100001C /* QuickTipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickTipView.swift; sourceTree = "<group>"; };
 		CD5150602F4E4A4900ADDD8B /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 		CD5150612F4E4A4900ADDD8B /* VSpeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VSpeedView.swift; sourceTree = "<group>"; };
 		CD5150642F4E528100ADDD8B /* PerfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfView.swift; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 				A1000017 /* RotaryKnob.swift */,
 				A100001A /* KeypadView.swift */,
 				A100001B /* OnboardingView.swift */,
+				A100001C /* QuickTipView.swift */,
 				A1000015 /* Assets.xcassets */,
 			);
 			path = CrosswindCalc;
@@ -167,6 +170,7 @@
 				CD5150632F4E4A4900ADDD8B /* FeatureFlags.swift in Sources */,
 				A100000A /* KeypadView.swift in Sources */,
 				A100000B /* OnboardingView.swift in Sources */,
+				A100000C /* QuickTipView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
