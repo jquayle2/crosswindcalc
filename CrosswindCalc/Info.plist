@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>XW Calc</string>
+	<key>CFBundleName</key>
+	<string>Crosswind Calculator</string>
+	<key>CFBundleSpokenName</key>
+	<string>Crosswind Calculator</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -13,13 +19,5 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleDisplayName</key>
-	<string>XW Calc</string>
-	<key>CFBundleName</key>
-	<string>Crosswind Calculator</string>
-	<key>CFBundleSpokenName</key>
-	<string>Crosswind Calculator</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used to find the nearest weather station for density altitude calculation.</string>
 </dict>
 </plist>
